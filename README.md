@@ -1,38 +1,5 @@
 <p align="center">
-<pre>
-                          _.---.._
-                       .-'   /////`.
-                      .'    /////-. `.
-                     /     //////  \  \
-                    ;     //////    ;  ;
-                    |    //////     |  |
-                    ;   /////      ;  ;
-          _.----._   \  `---'     /  /
-        .'_.---._  `.  `.       .'  /
-       / /   ____`. |    `---.-'   /
-      ; ;   (___ ) ||  __.---'    ;
-      | |    ___/ / | /  ____     |
-      ; ;   (___.' ;  | (    )    ;
-       \ \        /   ;  `--'    /
-        `.`------'   /    ___   /
-          `--.___,.-'  .-' _ `.'
-              |       /  .' \\
-              |      ;  /    \\
-              |      | ;      ;
-         _____|______|_|______|______
-        /  HERE  LIE  THE  REPOS   /|
-       /   THAT  TIME   FORGOT    / |
-      /___________________________/  |
-      |  _____________________  |   |
-      | |  .  .  .  .  .  .  | |   |
-      | |  R . I . P         | |   |
-      | |  github circa 2008 | |   |
-      | |___________________| |   /
-      |_________________________|  /
-      |_________________________| /
-      |_________________________|/
-   ~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~
-</pre>
+  <img src="grave.png" alt="GRAVE — Git Repository Abandonment & Vintage Explorer" width="600">
 </p>
 
 <h1 align="center">GRAVE</h1>
@@ -161,15 +128,47 @@ graph LR
     GH -->|gh search repos| GHAPI
     GH -->|gh api repos/| GHAPI
     DB --> SQLITE
+
+    style CLI fill:#0d1117,stroke:#3fb950,color:#3fb950
+    style Engine fill:#0d1117,stroke:#58a6ff,color:#58a6ff
+    style External fill:#0d1117,stroke:#8b949e,color:#8b949e
+
+    style SCAN fill:#1a2332,stroke:#3fb950,color:#c9d1d9
+    style DIG fill:#1a2332,stroke:#3fb950,color:#c9d1d9
+    style RANDOM fill:#1a2332,stroke:#3fb950,color:#c9d1d9
+    style RABBIT fill:#1a2332,stroke:#3fb950,color:#c9d1d9
+    style MORGUE fill:#1a2332,stroke:#3fb950,color:#c9d1d9
+    style CASKET fill:#1a2332,stroke:#3fb950,color:#c9d1d9
+    style LIST fill:#1a2332,stroke:#3fb950,color:#c9d1d9
+    style EXPORT fill:#1a2332,stroke:#3fb950,color:#c9d1d9
+
+    style API fill:#1a2332,stroke:#58a6ff,color:#c9d1d9
+    style PRESETS fill:#1a2332,stroke:#58a6ff,color:#c9d1d9
+    style DISPLAY fill:#1a2332,stroke:#58a6ff,color:#c9d1d9
+    style DB fill:#1a2332,stroke:#58a6ff,color:#c9d1d9
+
+    style GH fill:#1a2332,stroke:#8b949e,color:#c9d1d9
+    style GHAPI fill:#1a2332,stroke:#8b949e,color:#c9d1d9
+    style SQLITE fill:#1a2332,stroke:#8b949e,color:#c9d1d9
+
+    linkStyle default stroke:#3fb950,stroke-width:1.5px
 ```
 
 ```mermaid
 sequenceDiagram
-    participant User
-    participant CLI as grave CLI
-    participant Auth as gh auth status
-    participant Search as gh search repos
-    participant DB as SQLite
+    box rgb(13,17,23) User
+        participant User
+    end
+    box rgb(26,35,50) grave CLI
+        participant CLI as grave CLI
+    end
+    box rgb(26,35,50) GitHub
+        participant Auth as gh auth status
+        participant Search as gh search repos
+    end
+    box rgb(26,35,50) Storage
+        participant DB as SQLite
+    end
 
     User->>CLI: grave scan --preset ancient
     CLI->>Auth: check_gh_auth()
