@@ -1,15 +1,4 @@
 <p align="center">
-  <img src="grave.png" alt="GRAVE — Git Repository Abandonment & Vintage Explorer" width="600">
-</p>
-
-<h1 align="center">GRAVE</h1>
-<h3 align="center">Git Repository Abandonment & Vintage Explorer</h3>
-
-<p align="center">
-  <em>Dig up dead, forgotten, and vintage GitHub repositories.</em>
-</p>
-
-<p align="center">
   <img src="https://img.shields.io/badge/version-2.4.0-blue?style=flat-square" alt="Version">
   <img src="https://img.shields.io/badge/python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/built_with-uv-DE5FE9?style=flat-square" alt="uv">
@@ -18,6 +7,17 @@
   <img src="https://img.shields.io/badge/db-SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white" alt="SQLite">
   <img src="https://img.shields.io/badge/api-GitHub_CLI-181717?style=flat-square&logo=github&logoColor=white" alt="GitHub CLI">
   <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="MIT License">
+</p>
+
+<p align="center">
+  <img src="grave.png" alt="GRAVE — Git Repository Abandonment & Vintage Explorer" width="600">
+</p>
+
+<h1 align="center">GRAVE</h1>
+<h3 align="center">Git Repository Abandonment & Vintage Explorer</h3>
+
+<p align="center">
+  <em>Dig up dead, forgotten, and vintage GitHub repositories.</em>
 </p>
 
 ---
