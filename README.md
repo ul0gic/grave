@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2.4.0-blue?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/badge/version-2.4.1-blue?style=flat-square" alt="Version">
   <img src="https://img.shields.io/badge/python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/built_with-uv-DE5FE9?style=flat-square" alt="uv">
   <img src="https://img.shields.io/badge/linter-ruff-D7FF64?style=flat-square&logo=ruff&logoColor=black" alt="Ruff">
@@ -7,6 +7,7 @@
   <img src="https://img.shields.io/badge/db-SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white" alt="SQLite">
   <img src="https://img.shields.io/badge/api-GitHub_CLI-181717?style=flat-square&logo=github&logoColor=white" alt="GitHub CLI">
   <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="MIT License">
+  <img src="https://img.shields.io/pypi/v/grave-cli?style=flat-square&logo=pypi&logoColor=white&label=pypi" alt="PyPI">
 </p>
 
 <p align="center">
@@ -24,6 +25,32 @@
 
 **GRAVE** is a command-line tool for digital archaeology. It searches GitHub for old, weird, abandoned, and forgotten repositories using curated preset profiles and custom queries. Every result is persisted locally in SQLite so you can build your own collection of internet history.
 
+## Install
+
+```bash
+pipx install grave-cli
+```
+
+Or with pip:
+
+```bash
+pip install grave-cli
+```
+
+> **Requires:** Python 3.10+ and [gh CLI](https://cli.github.com) (handles all GitHub authentication)
+
+## Quick Start
+
+```bash
+# First-time setup (checks prerequisites)
+grave init
+
+# Start digging
+grave scan --preset ancient
+grave random
+grave dig torvalds/linux --open
+```
+
 ## Features
 
 - **27 curated presets** across 5 categories (archaeology, dead languages, eras, culture, science)
@@ -35,149 +62,6 @@
 - **Rich terminal UI** with clickable hyperlinks, colored tables, and formatted panels
 - **Export** to JSON, CSV, or NDJSON
 - **Zero token management** — delegates all auth to `gh` CLI
-
-## Quick Start
-
-```bash
-# Clone and install
-git clone https://github.com/YOUR_USER/grave.git
-cd grave
-uv sync
-
-# First-time setup (checks prerequisites)
-uv run grave init
-
-# Start digging
-uv run grave scan --preset ancient
-uv run grave random
-uv run grave dig torvalds/linux --open
-```
-
-## Requirements
-
-| Dependency | Purpose |
-|---|---|
-| [Python 3.10+](https://python.org) | Runtime |
-| [uv](https://docs.astral.sh/uv/) | Package manager |
-| [gh CLI](https://cli.github.com) | GitHub API access (handles all authentication) |
-
-## Installation
-
-```bash
-git clone https://github.com/YOUR_USER/grave.git
-cd grave
-uv sync
-uv run grave init
-```
-
-`grave init` will verify your Python version, check that `gh` is installed, and walk you through GitHub authentication if needed.
-
-## Architecture
-
-```mermaid
-graph LR
-    subgraph CLI["grave CLI"]
-        SCAN[grave scan]
-        DIG[grave dig]
-        RANDOM[grave random]
-        RABBIT[grave rabbit-hole]
-        MORGUE[grave morgue]
-        CASKET[grave casket]
-        LIST[grave list]
-        EXPORT[grave export]
-    end
-
-    subgraph Engine["Core Engine"]
-        API[api.py<br/>search_repos / get_repo]
-        PRESETS[presets.py<br/>27 presets / 5 categories]
-        DISPLAY[display.py<br/>Rich tables & panels]
-        DB[db.py<br/>SQLite persistence]
-    end
-
-    subgraph External["External"]
-        GH[gh CLI]
-        GHAPI[GitHub API]
-        SQLITE[(~/.local/share/grave/grave.db)]
-    end
-
-    SCAN --> API
-    SCAN --> PRESETS
-    DIG --> API
-    RANDOM --> PRESETS
-    RANDOM --> API
-    RABBIT --> API
-    MORGUE --> API
-    CASKET --> API
-
-    SCAN --> DB
-    DIG --> DB
-    RANDOM --> DB
-    RABBIT --> DB
-    MORGUE --> DB
-    CASKET --> DB
-    LIST --> DB
-    EXPORT --> DB
-
-    SCAN --> DISPLAY
-    DIG --> DISPLAY
-    RANDOM --> DISPLAY
-    LIST --> DISPLAY
-
-    API --> GH
-    GH -->|gh auth| GHAPI
-    GH -->|gh search repos| GHAPI
-    GH -->|gh api repos/| GHAPI
-    DB --> SQLITE
-
-    style CLI fill:#0d1117,stroke:#3fb950,color:#3fb950
-    style Engine fill:#0d1117,stroke:#58a6ff,color:#58a6ff
-    style External fill:#0d1117,stroke:#8b949e,color:#8b949e
-
-    style SCAN fill:#1a2332,stroke:#3fb950,color:#c9d1d9
-    style DIG fill:#1a2332,stroke:#3fb950,color:#c9d1d9
-    style RANDOM fill:#1a2332,stroke:#3fb950,color:#c9d1d9
-    style RABBIT fill:#1a2332,stroke:#3fb950,color:#c9d1d9
-    style MORGUE fill:#1a2332,stroke:#3fb950,color:#c9d1d9
-    style CASKET fill:#1a2332,stroke:#3fb950,color:#c9d1d9
-    style LIST fill:#1a2332,stroke:#3fb950,color:#c9d1d9
-    style EXPORT fill:#1a2332,stroke:#3fb950,color:#c9d1d9
-
-    style API fill:#1a2332,stroke:#58a6ff,color:#c9d1d9
-    style PRESETS fill:#1a2332,stroke:#58a6ff,color:#c9d1d9
-    style DISPLAY fill:#1a2332,stroke:#58a6ff,color:#c9d1d9
-    style DB fill:#1a2332,stroke:#58a6ff,color:#c9d1d9
-
-    style GH fill:#1a2332,stroke:#8b949e,color:#c9d1d9
-    style GHAPI fill:#1a2332,stroke:#8b949e,color:#c9d1d9
-    style SQLITE fill:#1a2332,stroke:#8b949e,color:#c9d1d9
-
-    linkStyle default stroke:#3fb950,stroke-width:1.5px
-```
-
-```mermaid
-sequenceDiagram
-    box rgb(13,17,23) User
-        participant User
-    end
-    box rgb(26,35,50) grave CLI
-        participant CLI as grave CLI
-    end
-    box rgb(26,35,50) GitHub
-        participant Auth as gh auth status
-        participant Search as gh search repos
-    end
-    box rgb(26,35,50) Storage
-        participant DB as SQLite
-    end
-
-    User->>CLI: grave scan --preset ancient
-    CLI->>Auth: check_gh_auth()
-    Auth-->>CLI: authenticated
-    CLI->>Search: search_repos(query, limit)
-    Search-->>CLI: JSON results
-    CLI->>DB: save_scan(query, preset, items)
-    CLI-->>User: Rich table output
-```
 
 ## Commands
 
@@ -307,36 +191,112 @@ grave presets --category archaeology
 | `weird-science` | Experimental science and simulation projects |
 | `academic` | Thesis projects and academic research code |
 
-## Project Structure
+## Architecture
 
+```mermaid
+graph LR
+    subgraph CLI["grave CLI"]
+        SCAN[grave scan]
+        DIG[grave dig]
+        RANDOM[grave random]
+        RABBIT[grave rabbit-hole]
+        MORGUE[grave morgue]
+        CASKET[grave casket]
+        LIST[grave list]
+        EXPORT[grave export]
+    end
+
+    subgraph Engine["Core Engine"]
+        API[api.py<br/>search_repos / get_repo]
+        PRESETS[presets.py<br/>27 presets / 5 categories]
+        DISPLAY[display.py<br/>Rich tables & panels]
+        DB[db.py<br/>SQLite persistence]
+    end
+
+    subgraph External["External"]
+        GH[gh CLI]
+        GHAPI[GitHub API]
+        SQLITE[(~/.local/share/grave/grave.db)]
+    end
+
+    SCAN --> API
+    SCAN --> PRESETS
+    DIG --> API
+    RANDOM --> PRESETS
+    RANDOM --> API
+    RABBIT --> API
+    MORGUE --> API
+    CASKET --> API
+
+    SCAN --> DB
+    DIG --> DB
+    RANDOM --> DB
+    RABBIT --> DB
+    MORGUE --> DB
+    CASKET --> DB
+    LIST --> DB
+    EXPORT --> DB
+
+    SCAN --> DISPLAY
+    DIG --> DISPLAY
+    RANDOM --> DISPLAY
+    LIST --> DISPLAY
+
+    API --> GH
+    GH -->|gh auth| GHAPI
+    GH -->|gh search repos| GHAPI
+    GH -->|gh api repos/| GHAPI
+    DB --> SQLITE
+
+    style CLI fill:#0d1117,stroke:#3fb950,color:#3fb950
+    style Engine fill:#0d1117,stroke:#58a6ff,color:#58a6ff
+    style External fill:#0d1117,stroke:#8b949e,color:#8b949e
+
+    style SCAN fill:#1a2332,stroke:#3fb950,color:#c9d1d9
+    style DIG fill:#1a2332,stroke:#3fb950,color:#c9d1d9
+    style RANDOM fill:#1a2332,stroke:#3fb950,color:#c9d1d9
+    style RABBIT fill:#1a2332,stroke:#3fb950,color:#c9d1d9
+    style MORGUE fill:#1a2332,stroke:#3fb950,color:#c9d1d9
+    style CASKET fill:#1a2332,stroke:#3fb950,color:#c9d1d9
+    style LIST fill:#1a2332,stroke:#3fb950,color:#c9d1d9
+    style EXPORT fill:#1a2332,stroke:#3fb950,color:#c9d1d9
+
+    style API fill:#1a2332,stroke:#58a6ff,color:#c9d1d9
+    style PRESETS fill:#1a2332,stroke:#58a6ff,color:#c9d1d9
+    style DISPLAY fill:#1a2332,stroke:#58a6ff,color:#c9d1d9
+    style DB fill:#1a2332,stroke:#58a6ff,color:#c9d1d9
+
+    style GH fill:#1a2332,stroke:#8b949e,color:#c9d1d9
+    style GHAPI fill:#1a2332,stroke:#8b949e,color:#c9d1d9
+    style SQLITE fill:#1a2332,stroke:#8b949e,color:#c9d1d9
+
+    linkStyle default stroke:#3fb950,stroke-width:1.5px
 ```
-grave/
-├── grave/                # Python package
-│   ├── __init__.py       # Version: 2.4.0
-│   ├── __main__.py       # python -m grave support
-│   ├── cli.py            # CLI commands and argparse setup
-│   ├── api.py            # GitHub API client (gh CLI wrapper)
-│   ├── presets.py         # 27 curated search presets
-│   ├── display.py        # Rich terminal output formatting
-│   └── db.py             # SQLite persistence layer
-├── pyproject.toml        # Package config, dependencies, ruff rules
-├── uv.lock               # Locked dependency versions
-├── .python-version       # Python version for uv
-├── .gitignore
-└── README.md
+
+```mermaid
+sequenceDiagram
+    box rgb(13,17,23) User
+        participant User
+    end
+    box rgb(26,35,50) grave CLI
+        participant CLI as grave CLI
+    end
+    box rgb(26,35,50) GitHub
+        participant Auth as gh auth status
+        participant Search as gh search repos
+    end
+    box rgb(26,35,50) Storage
+        participant DB as SQLite
+    end
+
+    User->>CLI: grave scan --preset ancient
+    CLI->>Auth: check_gh_auth()
+    Auth-->>CLI: authenticated
+    CLI->>Search: search_repos(query, limit)
+    Search-->>CLI: JSON results
+    CLI->>DB: save_scan(query, preset, items)
+    CLI-->>User: Rich table output
 ```
-
-## Tech Stack
-
-| Layer | Technology | Why |
-|---|---|---|
-| Language | Python 3.10+ | Rich ecosystem, sqlite3 stdlib, I/O bound workload |
-| Package Manager | uv | Fast, modern, handles Python versions |
-| Build Backend | hatchling | Simple, standards-compliant |
-| Terminal UI | rich | Tables, panels, clickable links, color |
-| Database | sqlite3 (stdlib) | Zero dependencies, local persistence |
-| GitHub API | gh CLI (subprocess) | Handles auth, tokens, rate limits for us |
-| Linter | ruff | Fast, strict (13 rule sets enabled) |
 
 ## Data Storage
 
@@ -353,21 +313,56 @@ XDG_DATA_HOME=/custom/path grave list
 # Database at /custom/path/grave/grave.db
 ```
 
-## Development
+## Contributing
 
 ```bash
+# Clone the repo
+git clone https://github.com/ul0gic/grave.git
+cd grave
+
 # Install dependencies
 uv sync
 
 # Run linting (13 ruff rule sets)
 uv run ruff check .
 
-# Run the tool
+# Run the tool locally
 uv run grave --help
 
 # Build check (run after every change)
 uv sync && uv run ruff check . && uv run grave --help
 ```
+
+### Project Structure
+
+```
+grave/
+├── grave/                # Python package
+│   ├── __init__.py       # Version
+│   ├── __main__.py       # python -m grave support
+│   ├── cli.py            # CLI commands and argparse setup
+│   ├── api.py            # GitHub API client (gh CLI wrapper)
+│   ├── presets.py        # 27 curated search presets
+│   ├── display.py        # Rich terminal output formatting
+│   └── db.py             # SQLite persistence layer
+├── pyproject.toml        # Package config, dependencies, ruff rules
+├── uv.lock               # Locked dependency versions
+├── .python-version       # Python version for uv
+├── .gitignore
+└── README.md
+```
+
+### Tech Stack
+
+| Layer | Technology | Why |
+|---|---|---|
+| Language | Python 3.10+ | Rich ecosystem, sqlite3 stdlib, I/O bound workload |
+| Package Manager | uv | Fast, modern, handles Python versions |
+| Build Backend | hatchling | Simple, standards-compliant |
+| Terminal UI | rich | Tables, panels, clickable links, color |
+| Database | sqlite3 (stdlib) | Zero dependencies, local persistence |
+| GitHub API | gh CLI (subprocess) | Handles auth, tokens, rate limits for us |
+| Linter | ruff | Fast, strict (13 rule sets enabled) |
 
 ## License
 

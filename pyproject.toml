@@ -1,11 +1,35 @@
 [project]
-name = "grave"
-version = "2.1.0"
+name = "grave-cli"
+version = "2.4.1"
 description = "GRAVE — Git Repository Abandonment & Vintage Explorer. Dig up dead, forgotten, and vintage GitHub repositories."
+readme = "pypi.md"
+license = "MIT"
 requires-python = ">=3.10"
+authors = [
+    { name = "ul0gic" },
+]
+keywords = ["github", "archaeology", "cli", "abandoned", "vintage", "repositories"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Utilities",
+]
 dependencies = [
     "rich>=14.3.2",
 ]
+
+[project.urls]
+Homepage = "https://github.com/ul0gic/grave"
+Repository = "https://github.com/ul0gic/grave"
+Issues = "https://github.com/ul0gic/grave/issues"
 
 [project.scripts]
 grave = "grave.cli:main"
@@ -39,6 +63,9 @@ ignore = []
 
 [tool.uv]
 package = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["grave"]
 
 [build-system]
 requires = ["hatchling"]
