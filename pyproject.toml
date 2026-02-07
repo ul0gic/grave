@@ -1,0 +1,45 @@
+[project]
+name = "grave"
+version = "2.1.0"
+description = "GRAVE — Git Repository Abandonment & Vintage Explorer. Dig up dead, forgotten, and vintage GitHub repositories."
+requires-python = ">=3.10"
+dependencies = [
+    "rich>=14.3.2",
+]
+
+[project.scripts]
+grave = "grave.cli:main"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.0",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "SIM",  # flake8-simplify
+    "RUF",  # ruff-specific rules
+    "C4",   # flake8-comprehensions
+    "PTH",  # flake8-use-pathlib
+    "RET",  # flake8-return
+    "TCH",  # flake8-type-checking
+]
+ignore = []
+
+[tool.uv]
+package = true
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
