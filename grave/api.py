@@ -144,6 +144,67 @@ def build_search_query(
     return " ".join(parts)
 
 
+_JSON_FIELDS = (
+    "fullName,description,stargazersCount,forksCount,watchersCount,"
+    "openIssuesCount,language,createdAt,pushedAt,updatedAt,url"
+)
+
+
+def _normalize_item(item: dict) -> dict:
+    """Convert gh CLI JSON field names to snake_case GitHub API format."""
+    return {
+        "full_name": item.get("fullName", ""),
+        "description": item.get("description", ""),
+        "stargazers_count": item.get("stargazersCount", 0),
+        "forks_count": item.get("forksCount", 0),
+        "watchers_count": item.get("watchersCount", 0),
+        "open_issues_count": item.get("openIssuesCount", 0),
+        "language": item.get("language", ""),
+        "created_at": item.get("createdAt", ""),
+        "pushed_at": item.get("pushedAt", ""),
+        "updated_at": item.get("updatedAt", ""),
+        "topics": [],
+        "html_url": item.get("url", ""),
+    }
+
+
+def _multi_keyword_search(
+    base_cmd: list[str],
+    keywords: list[str],
+    per_kw_limit: int,
+    total_limit: int,
+    sort: str | None,
+) -> dict:
+    """Search each keyword separately and merge results, deduped by full_name."""
+    seen = set()
+    merged = []
+
+    for keyword in keywords:
+        cmd = [*base_cmd, keyword]
+        if sort:
+            cmd.extend(["--sort", sort, "--order", "desc"])
+        cmd.extend(["--limit", str(per_kw_limit), "--json", _JSON_FIELDS])
+
+        result = subprocess.run(cmd, capture_output=True, text=True, check=False)
+        if result.returncode != 0:
+            continue
+
+        try:
+            items = json.loads(result.stdout)
+        except json.JSONDecodeError:
+            continue
+
+        for item in items:
+            name = item.get("fullName", "")
+            if name not in seen:
+                seen.add(name)
+                merged.append(_normalize_item(item))
+
+    # Sort merged results by stars descending and cap at total_limit
+    merged.sort(key=lambda r: r["stargazers_count"], reverse=True)
+    return {"items": merged[:total_limit]}
+
+
 def search_repos(query: str, limit: int = 30, sort: str | None = None) -> dict:
     """Search GitHub repositories using gh CLI.
 
@@ -161,28 +222,39 @@ def search_repos(query: str, limit: int = 30, sort: str | None = None) -> dict:
     try:
         # Parse query string to extract gh search repos parameters
         # Format: "keyword1 keyword2 created:range language:lang stars:range"
-        cmd = ["gh", "search", "repos"]
+        base_cmd = ["gh", "search", "repos"]
 
-        # Parse query to extract parameters
+        # Separate keywords from qualifiers
         parts = query.split()
         keywords = []
         for part in parts:
             if ":" in part:
                 qualifier, value = part.split(":", 1)
                 if qualifier == "created":
-                    cmd.extend(["--created", value])
+                    base_cmd.extend(["--created", value])
                 elif qualifier == "language":
-                    cmd.extend(["--language", value])
+                    base_cmd.extend(["--language", value])
                 elif qualifier == "stars":
-                    cmd.extend(["--stars", value])
+                    base_cmd.extend(["--stars", value])
                 elif qualifier == "pushed":
-                    cmd.extend(["--pushed", value])
+                    base_cmd.extend(["--updated", value])
             else:
                 keywords.append(part)
 
-        # Add keywords as the search term
+        # Multi-keyword strategy: search each keyword separately and merge.
+        # gh search repos treats multiple words as AND which returns nothing
+        # for diverse keyword sets. Searching per-keyword with OR semantics
+        # gives much better coverage.
+        if len(keywords) > 1:
+            per_kw_limit = max(limit // len(keywords), 5)
+            return _multi_keyword_search(
+                base_cmd, keywords, per_kw_limit, limit, sort,
+            )
+
+        # Single keyword or no keywords
+        cmd = list(base_cmd)
         if keywords:
-            cmd.append(" ".join(keywords))
+            cmd.append(keywords[0])
 
         # Add sort parameter
         if sort:
@@ -192,11 +264,7 @@ def search_repos(query: str, limit: int = 30, sort: str | None = None) -> dict:
         cmd.extend(["--limit", str(limit)])
 
         # Request JSON output with required fields
-        cmd.extend([
-            "--json",
-            "fullName,description,stargazersCount,forksCount,watchersCount,"
-            "openIssuesCount,language,createdAt,pushedAt,updatedAt,url",
-        ])
+        cmd.extend(["--json", _JSON_FIELDS])
 
         result = subprocess.run(
             cmd,
@@ -238,26 +306,7 @@ def search_repos(query: str, limit: int = 30, sort: str | None = None) -> dict:
         # Parse JSON response - gh search repos returns array directly
         try:
             items = json.loads(result.stdout)
-            # Convert field names from gh format to GitHub API format
-            normalized_items = []
-            for item in items:
-                normalized = {
-                    "full_name": item.get("fullName", ""),
-                    "description": item.get("description", ""),
-                    "stargazers_count": item.get("stargazersCount", 0),
-                    "forks_count": item.get("forksCount", 0),
-                    "watchers_count": item.get("watchersCount", 0),
-                    "open_issues_count": item.get("openIssuesCount", 0),
-                    "language": item.get("language", ""),
-                    "created_at": item.get("createdAt", ""),
-                    "pushed_at": item.get("pushedAt", ""),
-                    "updated_at": item.get("updatedAt", ""),
-                    "topics": [],  # topics not available in gh search repos
-                    "html_url": item.get("url", ""),
-                }
-                normalized_items.append(normalized)
-            # Return in same format as GitHub API (with items key)
-            return {"items": normalized_items}
+            return {"items": [_normalize_item(item) for item in items]}
         except json.JSONDecodeError as e:
             print(f"Failed to parse GitHub API response: {e}", file=sys.stderr)
             raise RuntimeError("Invalid JSON response from GitHub API") from e
