@@ -2,7 +2,7 @@
 
 Dig up dead, forgotten, and vintage GitHub repositories.
 
-**GRAVE** is a command-line tool for digital archaeology. It searches GitHub for old, weird, abandoned, and forgotten repositories using 27 curated preset profiles and custom queries. Every result is persisted locally in SQLite so you can build your own collection of internet history.
+**GRAVE** is a command-line tool for digital archaeology. It searches GitHub for old, weird, abandoned, and forgotten repositories using 27 curated preset profiles and custom queries. Stateless by design — results stream to your terminal or to stdout via `export`, with no database and nothing written to disk.
 
 ## Install
 
@@ -16,7 +16,7 @@ Or with pip:
 pip install grave-cli
 ```
 
-> **Requires:** Python 3.10+ and [gh CLI](https://cli.github.com) (handles all GitHub authentication)
+> **Requires:** Python 3.13+ and [gh CLI](https://cli.github.com) (handles all GitHub authentication)
 
 ## Quick Start
 
@@ -37,9 +37,9 @@ grave dig torvalds/linux --open
 - **Smart abandonment filters** (`--abandoned`, `--dead-since`)
 - **Discovery commands** like `grave random` and `grave rabbit-hole`
 - **Thematic exploration** with `grave morgue` (dead forks) and `grave casket` (archived repos)
-- **SQLite persistence** with automatic deduplication and scan history
 - **Rich terminal UI** with clickable hyperlinks, colored tables, and formatted panels
-- **Export** to JSON, CSV, or NDJSON
+- **Export** to JSON, CSV, or NDJSON — live results streamed to stdout
+- **Stateless** — no database, no `~/.local/share/grave`, nothing written to disk
 
 ## Commands
 
@@ -52,8 +52,7 @@ grave dig torvalds/linux --open
 | `grave rabbit-hole <owner/repo>` | Find similar repos |
 | `grave morgue` | Search for dead forks |
 | `grave casket` | Find archived repositories |
-| `grave list` | Browse your collected repos |
-| `grave export` | Export as JSON, CSV, or NDJSON |
+| `grave export` | Run a live search and emit results as JSON, CSV, or NDJSON to stdout |
 | `grave presets` | List all 27 search presets |
 
 ## Links

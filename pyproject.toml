@@ -4,7 +4,7 @@ version = "2.4.2"
 description = "GRAVE — Git Repository Abandonment & Vintage Explorer. Dig up dead, forgotten, and vintage GitHub repositories."
 readme = "pypi.md"
 license = "MIT"
-requires-python = ">=3.10"
+requires-python = ">=3.13"
 authors = [
     { name = "ul0gic" },
 ]
@@ -15,9 +15,6 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries",
     "Topic :: Utilities",
@@ -32,15 +29,19 @@ Repository = "https://github.com/ul0gic/grave"
 Issues = "https://github.com/ul0gic/grave/issues"
 
 [project.scripts]
-grave = "grave.cli:main"
+grave = "grave.cli.parser:main"
 
 [dependency-groups]
 dev = [
     "ruff>=0.15.0",
+    "mypy>=1.18.0",
+    "pytest>=8.0.0",
+    "hypothesis>=6.100.0",
+    "pytest-cov>=5.0.0",
 ]
 
 [tool.ruff]
-line-length = 88
+line-length = 100
 target-version = "py313"
 
 [tool.ruff.lint]
@@ -58,8 +59,74 @@ select = [
     "PTH",  # flake8-use-pathlib
     "RET",  # flake8-return
     "TCH",  # flake8-type-checking
+    "S",    # flake8-bandit (security)
+    "PERF", # Perflint (performance anti-patterns)
+    "FURB", # refurb (modernization)
+    "FLY",  # flynt (f-string conversion)
+    "PIE",  # flake8-pie (misc improvements)
+    "ISC",  # flake8-implicit-str-concat
+    "ERA",  # eradicate (no commented-out code)
+    "Q",    # flake8-quotes (quote consistency)
 ]
-ignore = []
+ignore = [
+    "S311",  # standard PRNG — random.choice() selects display presets, not crypto material
+    "S603",  # subprocess call without check=True — intentional, gh exit codes are inspected manually
+    "S607",  # partial executable path — "gh" is on PATH by design
+    "ISC001", # implicit str concat on one line — conflicts with ruff formatter
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["grave"]
+
+[tool.ruff.lint.per-file-ignores]
+# Test code intentionally relaxes a few security/style rules that only make
+# sense for production code:
+#   S101 — pytest's whole assertion model is `assert`; flagging it is noise.
+#   S106 — hardcoded "passwords" here are fake fixture values (e.g. dummy tokens
+#          in gh-auth stderr), never real secrets.
+#   INP001 — tests/ is a test root, not an importable package; no __init__ needed.
+"tests/**" = ["S101", "S106", "INP001"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = true
+
+[tool.mypy]
+files = ["grave"]
+python_version = "3.13"
+strict = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+# Not part of --strict; catches use-before-assignment so mypy agrees with Pyright.
+enable_error_code = ["possibly-undefined"]
+# PEP 420 namespace packages: the package ships no __init__.py, so mypy must
+# treat directories under grave/ as namespace subpackages and resolve module
+# names from the package root (grave/) rather than each file's parent. Without
+# this it cannot disambiguate same-named modules (e.g. config/presets.py vs
+# commands/presets.py). Config only — no code is suppressed.
+namespace_packages = true
+explicit_package_bases = true
+mypy_path = "."
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --cov=grave --cov-report=term-missing"
+
+[tool.coverage.run]
+source = ["grave"]
+branch = true
+
+[tool.coverage.report]
+# __main__ is a thin `python -m grave` shim exercised only at process start;
+# the TYPE_CHECKING import guards are never executed at runtime.
+exclude_lines = [
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]
 
 [tool.uv]
 package = true
