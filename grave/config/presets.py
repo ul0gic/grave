@@ -1,55 +1,14 @@
-"""Search preset definitions and management.
+"""Curated search preset definitions and accessors.
 
-This module defines curated search presets for discovering old, weird,
-and forgotten GitHub repositories. Each preset contains search parameters
-that generate specific GitHub search queries.
+This module holds the curated :class:`Preset` instances for discovering old,
+weird, and forgotten GitHub repositories, plus the helpers to list and look them
+up. Query building lives in the CLI layer, so this module depends only on the
+pure :class:`Preset` model.
 """
 
-from dataclasses import dataclass
+from __future__ import annotations
 
-from grave.api import build_search_query
-
-
-@dataclass
-class Preset:
-    """A curated search preset for GitHub repository discovery.
-
-    Attributes:
-        name: Unique identifier for the preset
-        description: Human-readable description of what this preset finds
-        keywords: Keywords to include in the search query
-        created_range: Date range for repository creation (e.g., '2000..2010')
-        language: Programming language filter (optional)
-        stars_range: Star count filter (e.g., '>100', '10..50')
-        pushed: Last push date filter (e.g., '<2015-01-01')
-        category: Category grouping for the preset
-        sort: Sort order for results ('stars', 'forks', 'updated')
-    """
-
-    name: str
-    description: str
-    keywords: list[str]
-    created_range: str | None = None
-    language: str | None = None
-    stars_range: str | None = None
-    pushed: str | None = None
-    category: str = "general"
-    sort: str = "stars"
-
-    def build_query(self) -> str:
-        """Convert this preset into a GitHub search query string.
-
-        Returns:
-            Valid GitHub search query string
-        """
-        return build_search_query(
-            keywords=self.keywords if self.keywords else None,
-            created_range=self.created_range,
-            language=self.language,
-            stars_range=self.stars_range,
-            pushed=self.pushed,
-        )
-
+from grave.models.preset import Preset
 
 # Curated search presets for discovering forgotten GitHub repositories
 PRESETS = [
