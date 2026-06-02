@@ -1,0 +1,35 @@
+name: CodeQL
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly on Monday at 08:17 UTC (staggered to reduce GitHub load spikes)
+    - cron: "17 8 * * 1"
+
+permissions:
+  security-events: write
+  contents: read
+  actions: read
+
+jobs:
+  analyze:
+    name: Analyze (Python)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@7211b7c8077ea37d8641b6271f6a365a22a5fbfa # v4.36.0
+        with:
+          languages: python
+          build-mode: none
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@7211b7c8077ea37d8641b6271f6a365a22a5fbfa # v4.36.0
+        with:
+          category: "/language:python"
