@@ -32,13 +32,13 @@ def cmd_init(args: argparse.Namespace) -> None:
 
     # Check 1: Python version
     python_version = sys.version_info
-    if python_version >= (3, 10):
+    if python_version >= (3, 13):
         py_ver = f"✓ Python {python_version.major}.{python_version.minor}.{python_version.micro}"
         console.print(py_ver, style="green")
     else:
         py_ver = (
             f"✗ Python {python_version.major}."
-            f"{python_version.minor}.{python_version.micro} (requires 3.10+)"
+            f"{python_version.minor}.{python_version.micro} (requires 3.13+)"
         )
         console.print(py_ver, style="red")
         all_checks_passed = False

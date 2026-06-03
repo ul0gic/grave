@@ -1,6 +1,6 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2.4.1-blue?style=flat-square" alt="Version">
-  <img src="https://img.shields.io/badge/python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/version-3.0.1-blue?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/badge/python-3.13+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/built_with-uv-DE5FE9?style=flat-square" alt="uv">
   <img src="https://img.shields.io/badge/linter-ruff-D7FF64?style=flat-square&logo=ruff&logoColor=black" alt="Ruff">
   <img src="https://img.shields.io/badge/terminal-rich-purple?style=flat-square" alt="Rich">
@@ -309,8 +309,7 @@ uv sync && uv run ruff check . && uv run mypy grave && uv run pytest && grave --
 
 ```
 grave/
-├── grave/                  # Python package
-│   ├── __init__.py         # __version__ only
+├── grave/                  # PEP 420 namespace package (no __init__.py)
 │   ├── __main__.py         # python -m grave support
 │   ├── errors.py           # UsageError
 │   ├── cli/                # argparse setup, main entry, dispatch

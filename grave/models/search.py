@@ -1,7 +1,8 @@
 """Structured GitHub repository search specification.
 
-Defines the immutable :class:`SearchSpec` produced by ``api.build_search_query``
-and consumed by ``api.search_repos``. Pure data plus a formatting helper; imports
+Defines the immutable :class:`SearchSpec` produced by
+``services.query.build_search_query`` and consumed by
+``integrations.github.search_repos``. Pure data plus a formatting helper; imports
 nothing first-party so it never participates in an import cycle.
 """
 
@@ -22,6 +23,6 @@ class SearchSpec(NamedTuple):
     qualifiers: list[tuple[str, str]]
 
     def display(self) -> str:
-        """Human-readable query string for logging and database storage."""
+        """Human-readable query string for logging and display."""
         parts = [*self.keywords, *(f"{name}:{value}" for name, value in self.qualifiers)]
         return " ".join(parts)

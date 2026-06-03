@@ -1,6 +1,6 @@
 [project]
 name = "grave-cli"
-version = "3.0.0"
+version = "3.0.1"
 description = "GRAVE — Git Repository Abandonment & Vintage Explorer. Dig up dead, forgotten, and vintage GitHub repositories."
 readme = "pypi.md"
 license = "MIT"
