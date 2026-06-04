@@ -34,7 +34,7 @@ grave morgue                        # dead forks and abandoned mirrors
 
 ## Ways to dig
 
-- **27 curated presets** across 5 themes — archaeology, dead languages, eras, internet culture, and weird science. Browse them with `grave presets`.
+- **28 curated presets** across 5 themes — archaeology, dead languages, eras, internet culture, and weird science. Browse them with `grave presets`.
 - **Era search** — named time windows: `--era y2k`, `dotcom`, `web2.0`, `early-github`, `pre-mobile`.
 - **Abandonment filters** — `--abandoned 10` (untouched 10+ years), `--dead-since 2015`.
 - **Dead-language hunts** — Perl, Pascal, COBOL, Tcl, Smalltalk, ActionScript, and other survivors.
@@ -56,7 +56,7 @@ Every result is a rich, clickable table; `grave dig` opens a full panel for a si
 | `grave morgue` | Dead forks, mirrors, and abandoned projects |
 | `grave casket` | Archived, deprecated, and read-only repositories |
 | `grave export` | Run a live search and emit JSON / CSV / NDJSON to stdout |
-| `grave presets` | List all 27 curated presets |
+| `grave presets` | List all 28 curated presets |
 
 ## Save a dig
 

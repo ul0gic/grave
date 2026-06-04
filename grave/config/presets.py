@@ -245,6 +245,15 @@ PRESETS = [
         category="science",
         sort="stars",
     ),
+    Preset(
+        name="dead-ai-pre2012",
+        description="Pre-AlexNet AI, abandoned by the deep-learning boom",
+        keywords=["neural network", "machine learning", "artificial intelligence"],
+        created_range="2008-01-01..2012-12-31",
+        pushed="<2017-01-01",
+        category="science",
+        sort="stars",
+    ),
 ]
 
 
