@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/version-3.0.1-blue?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/badge/version-3.0.2-blue?style=flat-square" alt="Version">
   <img src="https://img.shields.io/badge/python-3.13+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/built_with-uv-DE5FE9?style=flat-square" alt="uv">
   <img src="https://img.shields.io/badge/linter-ruff-D7FF64?style=flat-square&logo=ruff&logoColor=black" alt="Ruff">
