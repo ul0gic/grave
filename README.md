@@ -52,7 +52,7 @@ grave dig torvalds/linux --open
 
 ## Features
 
-- **27 curated presets** across 5 categories (archaeology, dead languages, eras, culture, science)
+- **28 curated presets** across 5 categories (archaeology, dead languages, eras, culture, science)
 - **Era-based search** with named time windows (Y2K, dotcom bubble, Web 2.0, early GitHub)
 - **Smart abandonment filters** (`--abandoned`, `--dead-since`)
 - **Discovery commands** like `grave random` (slot machine) and `grave rabbit-hole` (find similar repos)
@@ -71,7 +71,7 @@ grave dig torvalds/linux --open
 | `grave init` | First-time setup and prerequisite checks |
 | `grave scan` | Search for repos with presets or custom parameters |
 | `grave dig <owner/repo>` | Deep-dive into a specific repository |
-| `grave presets` | List all 27 available search presets |
+| `grave presets` | List all 28 available search presets |
 
 ### Discovery Commands
 
@@ -131,7 +131,7 @@ grave presets --category archaeology
 
 ## Presets
 
-27 curated presets across 5 categories:
+28 curated presets across 5 categories:
 
 ### Archaeology
 | Preset | Description |
@@ -179,6 +179,7 @@ grave presets --category archaeology
 |---|---|
 | `weird-science` | Experimental science and simulation projects |
 | `academic` | Thesis projects and academic research code |
+| `dead-ai-pre2012` | Pre-AlexNet AI, abandoned by the deep-learning boom |
 
 ## Architecture
 
@@ -197,7 +198,7 @@ graph LR
     subgraph Engine["Core Engine"]
         COMMANDS[commands/<br/>one module per command]
         SERVICES[services/query.py<br/>build_search_query]
-        PRESETS[config/presets.py<br/>27 presets / 5 categories]
+        PRESETS[config/presets.py<br/>28 presets / 5 categories]
         DISPLAY[view/display.py<br/>Rich tables & panels]
         OUTPUT[view/output.py<br/>json / csv / ndjson]
     end
