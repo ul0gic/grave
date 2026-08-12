@@ -1,10 +1,4 @@
-"""Argument parsing and command dispatch for grave.
-
-Builds the argparse tree, wires each subcommand to its handler in
-:mod:`grave.commands`, and dispatches. The dispatch layer is the single place
-that renders typed errors: :class:`~grave.errors.UsageError` (exit 2) and
-:class:`~grave.integrations.github.GhError` (exit 1).
-"""
+"""Dispatch is the single place that renders typed errors: UsageError → 2, GhError → 1."""
 
 from __future__ import annotations
 
@@ -39,7 +33,6 @@ def main() -> None:
 
     subparsers = parser.add_subparsers(dest="command", help="available commands")
 
-    # grave init
     parser_init = subparsers.add_parser(
         "init",
         help="set up GRAVE for first use",
@@ -50,7 +43,6 @@ def main() -> None:
     )
     parser_init.set_defaults(func=cmd_init)
 
-    # grave scan
     parser_scan = subparsers.add_parser(
         "scan",
         help="scan for repositories with preset or custom parameters",
@@ -128,7 +120,6 @@ def main() -> None:
     )
     parser_scan.set_defaults(func=cmd_scan)
 
-    # grave dig <owner/repo>
     parser_dig = subparsers.add_parser(
         "dig",
         help="dig up detailed information about a repository",
@@ -150,7 +141,6 @@ def main() -> None:
     )
     parser_dig.set_defaults(func=cmd_dig)
 
-    # grave presets
     parser_presets = subparsers.add_parser(
         "presets",
         help="list all available preset search profiles",
@@ -168,7 +158,6 @@ def main() -> None:
     )
     parser_presets.set_defaults(func=cmd_presets)
 
-    # grave export
     parser_export = subparsers.add_parser(
         "export",
         help="export scan results in specified format",
@@ -244,7 +233,6 @@ def main() -> None:
     )
     parser_export.set_defaults(func=cmd_export)
 
-    # grave random
     parser_random = subparsers.add_parser(
         "random",
         help="random archaeological dig — surprise yourself",
@@ -268,7 +256,6 @@ def main() -> None:
     )
     parser_random.set_defaults(func=cmd_random)
 
-    # grave rabbit-hole
     parser_rabbit_hole = subparsers.add_parser(
         "rabbit-hole",
         help="find repos similar to a given repository",
@@ -312,7 +299,6 @@ def main() -> None:
     )
     parser_rabbit_hole.set_defaults(func=cmd_rabbit_hole)
 
-    # grave morgue
     parser_morgue = subparsers.add_parser(
         "morgue",
         help="find dead forks and repos with inactive owners",
@@ -336,7 +322,6 @@ def main() -> None:
     )
     parser_morgue.set_defaults(func=cmd_themed, lens="morgue")
 
-    # grave casket
     parser_casket = subparsers.add_parser(
         "casket",
         help="find archived and frozen repositories",
@@ -364,7 +349,6 @@ def main() -> None:
     )
     parser_casket.set_defaults(func=cmd_themed, lens="casket")
 
-    # grave completion
     parser_completion = subparsers.add_parser(
         "completion",
         help="print a shell tab-completion script",
@@ -379,7 +363,6 @@ def main() -> None:
         choices=["bash", "zsh"],
         help="shell to generate the completion script for",
     )
-    # The completion command introspects the full parser tree to stay in sync.
     parser_completion.set_defaults(func=cmd_completion, root_parser=parser)
 
     args = parser.parse_args()

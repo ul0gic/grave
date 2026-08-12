@@ -1,17 +1,10 @@
-"""Neutral shared error types for GRAVE.
-
-Carries no first-party dependencies so any layer (cli, commands) can import it
-without forming a cycle.
-"""
+"""Imports only stdlib — any layer may import this without forming a cycle."""
 
 from __future__ import annotations
 
 
 class UsageError(Exception):
-    """A user input mistake that should exit with code 2.
-
-    Carries the primary message plus any follow-up hint lines for stderr.
-    """
+    """User input mistake; the dispatch layer renders message + hints and exits 2."""
 
     def __init__(self, message: str, *hints: str) -> None:
         super().__init__(message)

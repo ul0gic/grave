@@ -1,9 +1,4 @@
-"""Tests for grave.cli — exit codes and output routing are part of the contract.
-
-The gh boundary is mocked by patching the API functions the CLI imports
-(``check_gh_auth``, ``search_repos``, ``get_repo``). No network, no real gh.
-grave is stateless, so there is nothing to isolate on disk.
-"""
+"""Exit codes and output routing are part of the CLI contract; gh is mocked, never run."""
 
 from __future__ import annotations
 
@@ -47,11 +42,6 @@ def _search_items(*names: str) -> dict[str, list[dict[str, Any]]]:
     return {"items": items}
 
 
-# --------------------------------------------------------------------------- #
-# no command / help
-# --------------------------------------------------------------------------- #
-
-
 def test_no_command_prints_help_and_exits_zero(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -59,11 +49,6 @@ def test_no_command_prints_help_and_exits_zero(
         run_cli([], monkeypatch)
     assert exc.value.code == 0
     assert "usage" in capsys.readouterr().out.lower()
-
-
-# --------------------------------------------------------------------------- #
-# scan — usage errors (exit 2) and preset resolution
-# --------------------------------------------------------------------------- #
 
 
 def test_scan_no_params_exits_2(
@@ -240,11 +225,6 @@ def test_scan_preset_language_override(monkeypatch: pytest.MonkeyPatch) -> None:
     assert qualifiers["language"] == "Perl"
 
 
-# --------------------------------------------------------------------------- #
-# dig / rabbit-hole — owner/repo validation
-# --------------------------------------------------------------------------- #
-
-
 @pytest.mark.parametrize("bad", ["noslash", "a/b/c", "/leading", "trailing/", "/"])
 def test_dig_bad_repo_format_exits_2(
     bad: str,
@@ -367,11 +347,6 @@ def test_rabbit_hole_negative_abandoned_exits_2(
     assert "invalid --abandoned" in capsys.readouterr().err
 
 
-# --------------------------------------------------------------------------- #
-# presets
-# --------------------------------------------------------------------------- #
-
-
 def test_presets_lists_all(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -396,11 +371,6 @@ def test_presets_invalid_category_exits_2(
         run_cli(["presets", "--category", "bogus"], monkeypatch)
     assert exc.value.code == 2
     assert "invalid category" in capsys.readouterr().err
-
-
-# --------------------------------------------------------------------------- #
-# export
-# --------------------------------------------------------------------------- #
 
 
 def test_export_json_from_api(
@@ -464,11 +434,6 @@ def test_export_no_params_exits_2(
     assert exc.value.code == 2
 
 
-# --------------------------------------------------------------------------- #
-# random / morgue / casket — preset and themed searches
-# --------------------------------------------------------------------------- #
-
-
 def test_random_runs_with_a_preset(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -512,11 +477,6 @@ def test_casket_applies_language_filter(monkeypatch: pytest.MonkeyPatch) -> None
         run_cli(["casket", "--language", "Ruby", "--json"], monkeypatch)
 
     assert dict(captured["spec"].qualifiers)["language"] == "Ruby"
-
-
-# --------------------------------------------------------------------------- #
-# themed commands — non-JSON (Rich table) output paths
-# --------------------------------------------------------------------------- #
 
 
 @pytest.mark.parametrize(

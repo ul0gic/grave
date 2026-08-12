@@ -1,8 +1,4 @@
-"""Output emission for grave results: JSON to stdout, Rich tables, or exports.
-
-Rendering helpers that the command layer calls to surface results. JSON goes to
-stdout for piping; the Rich table is for humans. Export writes json/ndjson/csv.
-"""
+"""JSON goes to stdout for piping; the Rich table is for humans."""
 
 from __future__ import annotations
 

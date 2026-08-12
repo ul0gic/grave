@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-# Era mapping for --era flag
 ERAS = {
     "y2k": ("1999-01-01", "2003-12-31"),
     "dotcom": ("1997-01-01", "2001-12-31"),

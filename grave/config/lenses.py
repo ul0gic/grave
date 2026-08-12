@@ -1,11 +1,4 @@
-"""Themed-lens definitions for the ``morgue`` and ``casket`` commands.
-
-A *lens* is a pure-data search: a fixed set of keywords plus optional
-created/pushed qualifiers and the themed banner shown above the results. Both
-the morgue and the casket are the same generic search differing only in these
-values, so they live here as one declarative table. Adding a future lens is a
-single :class:`Lens` entry plus a subparser pointing at ``cmd_themed``.
-"""
+"""A new themed command is one Lens entry here plus a subparser pointing at cmd_themed."""
 
 from __future__ import annotations
 
@@ -14,16 +7,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class Lens:
-    """A themed, pure-data search over abandoned repositories.
-
-    Attributes:
-        keywords: Fixed keywords for the search query.
-        created_range: Optional creation date range (None means "any").
-        pushed: Last-push qualifier marking abandonment (e.g. '<2018-01-01').
-        header: Banner line printed above results (styled with ``header_style``).
-        header_style: Rich style applied to the header line.
-        blurb: Secondary line printed below the header (carries its own markup).
-    """
+    """A themed, pure-data search; blurb carries its own Rich markup."""
 
     keywords: list[str]
     created_range: str | None
@@ -33,8 +17,6 @@ class Lens:
     blurb: str
 
 
-# Themed lenses keyed by command name. Each entry holds exactly the values the
-# corresponding command renders; behavior lives in commands.themed.cmd_themed.
 THEMED_LENSES: dict[str, Lens] = {
     "morgue": Lens(
         keywords=["fork", "mirror", "deleted", "moved", "404", "gone"],

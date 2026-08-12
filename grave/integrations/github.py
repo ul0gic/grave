@@ -1,12 +1,4 @@
-"""GitHub integration via the gh CLI subprocess boundary.
-
-Wraps ``gh search repos`` and ``gh api repos/{owner}/{repo}``. All subprocess
-invocations funnel through :func:`_run_gh`, which adds a timeout and a single
-retry on transient failures. Errors are raised as typed :class:`GhError`
-subclasses carrying user-facing messages; this module never prints. The CLI
-dispatch layer is responsible for rendering those messages and choosing an
-exit code.
-"""
+"""All gh subprocess calls funnel through _run_gh; errors raise typed GhErrors, never print."""
 
 from __future__ import annotations
 
@@ -64,8 +56,7 @@ _JSON_FIELDS = (
     "openIssuesCount,language,createdAt,pushedAt,updatedAt,url"
 )
 
-# Search qualifiers map 1:1 to gh flags except `pushed`, which gh exposes as
-# `--updated` (its last-push abandonment filter). Anything else is `--{name}`.
+# gh exposes the `pushed` qualifier as --updated; every other qualifier is --{name}.
 QUALIFIER_FLAGS = {"pushed": "--updated"}
 
 _VALID_SORTS = frozenset({"stars", "forks", "updated"})
@@ -73,11 +64,7 @@ _NAME_PATTERN = re.compile(r"^[A-Za-z0-9._-]+$")
 
 
 def _invoke_gh(args: list[str], timeout: int) -> subprocess.CompletedProcess[str]:
-    """Run gh once, translating both unrecoverable cases into typed GhErrors.
-
-    Timeout and transient OSError propagate raw so :func:`_run_gh` can decide
-    whether to retry; a missing executable raises immediately (retry is futile).
-    """
+    """Timeout/transient OSError propagate raw for _run_gh to retry; a missing gh raises now."""
     try:
         return subprocess.run(
             args,
@@ -87,22 +74,14 @@ def _invoke_gh(args: list[str], timeout: int) -> subprocess.CompletedProcess[str
             timeout=timeout,
         )
     except FileNotFoundError as e:
-        # gh is not installed at all — retrying cannot help.
         raise GhNotInstalledError("gh CLI not found. Install it: https://cli.github.com") from e
 
 
 def _run_gh(args: list[str], *, timeout: int = 30) -> subprocess.CompletedProcess[str]:
-    """Run a gh command, retrying once on timeout or transient OS/network errors.
-
-    Never retries rate-limit failures (those surface from returncode inspection,
-    not from this call). A timeout or transient OSError is retried exactly once;
-    a second failure raises a typed GhError. Every path returns or raises, so no
-    variable is left possibly-unbound.
-    """
+    """Retries exactly once on timeout or transient OSError; rate limits are never retried."""
     try:
         return _invoke_gh(args, timeout)
     except (subprocess.TimeoutExpired, OSError):
-        # First attempt failed transiently; retry exactly once.
         try:
             return _invoke_gh(args, timeout)
         except subprocess.TimeoutExpired as e:
@@ -112,14 +91,7 @@ def _run_gh(args: list[str], *, timeout: int = 30) -> subprocess.CompletedProces
 
 
 def check_gh_auth() -> None:
-    """Verify that gh is installed and authenticated.
-
-    Returns None on success.
-
-    Raises:
-        GhNotInstalledError: If the gh executable is missing.
-        GhAuthError: If gh is installed but not authenticated.
-    """
+    """Raise GhNotInstalledError or GhAuthError unless gh is installed and authenticated."""
     result = _run_gh(["gh", "auth", "status"])
     if result.returncode != 0:
         raise GhAuthError(
@@ -128,13 +100,8 @@ def check_gh_auth() -> None:
 
 
 def _merge_sort_key(sort: str | None) -> Callable[[RepoItem], int | str]:
-    """Return a key function for merge-sorting multi-keyword results client-side.
-
-    Numeric keys return their int directly (0 sorts last under reverse=True);
-    the date key is a string. Mixing an `or ""` fallback into the numeric keys
-    would coerce a legitimate 0 to "" and break the sort with a str/int compare.
-    Defaults to stars.
-    """
+    """Key for merge-sorting multi-keyword results client-side; defaults to stars.
+    Never add an `or ""` fallback: coercing a real 0 to "" makes the sort compare str with int."""
     if sort == "updated":
         return lambda r: r["updated_at"]
     if sort == "forks":
@@ -143,11 +110,8 @@ def _merge_sort_key(sort: str | None) -> Callable[[RepoItem], int | str]:
 
 
 def _normalize_item(item: dict[str, Any]) -> RepoItem:
-    """Convert gh CLI JSON field names to snake_case GitHub API format.
-
-    Missing language/description normalize to None (not "") so empty values
-    stay falsy and never surface as blank rows in stats or exports.
-    """
+    """Convert gh camelCase fields to snake_case; empty language/description become None,
+    not "", so they stay falsy in stats and exports."""
     return {
         "full_name": item.get("fullName", ""),
         "description": item.get("description") or None,
@@ -218,20 +182,8 @@ def _multi_keyword_search(
 def search_repos(
     spec: SearchSpec, limit: int = 30, sort: str | None = None
 ) -> dict[str, list[RepoItem]]:
-    """Search GitHub repositories using gh CLI.
-
-    Args:
-        spec: Structured search with keywords and qualifiers kept separate
-        limit: Maximum number of results to return (must be > 0)
-        sort: Sort field (stars, forks, updated) or None
-
-    Returns:
-        Dict with 'items' list containing repository data
-
-    Raises:
-        ValueError: If limit is not positive or sort is not a known value.
-        GhError: If the gh CLI fails, is not installed, or is not authenticated.
-    """
+    """Search GitHub repos via gh. Multiple keywords run as separate searches and OR-merge,
+    because gh ANDs words together and returns nothing for diverse keyword sets."""
     if limit <= 0:
         raise ValueError(f"limit must be positive, got {limit}")
     if sort is not None and sort not in _VALID_SORTS:
@@ -243,13 +195,8 @@ def search_repos(
         base_cmd.extend([flag, value])
 
     keywords = spec.keywords
-    # Multi-keyword strategy: search each keyword separately and merge.
-    # gh search repos treats multiple words as AND, which returns nothing
-    # for diverse keyword sets. Per-keyword OR semantics give much better
-    # coverage. Phrases stay intact as single argv elements either way.
     if len(keywords) > 1:
-        # Over-fetch per keyword (floor of even split, min 5) because dedup
-        # shrinks the merged pool; the merged result is sliced to `limit`.
+        # Over-fetch per keyword (min 5): dedup shrinks the pool before the slice to `limit`.
         per_kw_limit = max(limit // len(keywords), 5)
         return _multi_keyword_search(base_cmd, keywords, per_kw_limit, limit, sort)
 
@@ -264,19 +211,7 @@ def search_repos(
 
 
 def get_repo(owner: str, repo: str) -> dict[str, Any]:
-    """Get detailed information about a repository.
-
-    Args:
-        owner: Repository owner username
-        repo: Repository name
-
-    Returns:
-        Parsed JSON response from GitHub API
-
-    Raises:
-        ValueError: If owner or repo contains characters outside [A-Za-z0-9._-].
-        GhError: If the gh CLI fails, is not installed, or is not authenticated.
-    """
+    """Fetch one repo's raw API record; owner/repo are validated before hitting argv."""
     if not _NAME_PATTERN.match(owner):
         raise ValueError(f"invalid repository owner '{owner}'")
     if not _NAME_PATTERN.match(repo):

@@ -1,9 +1,4 @@
-"""Unit and integration tests for grave.integrations.github.
-
-The gh CLI is the only true boundary here, so ``subprocess.run`` is the only
-thing mocked. Pure functions (_normalize_item) run with no mocking at all;
-build_search_query now lives in grave.services and is tested there.
-"""
+"""subprocess.run is the only mock — gh is the only real boundary in this module."""
 
 from __future__ import annotations
 
@@ -27,11 +22,6 @@ from grave.models.search import SearchSpec
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-
-
-# --------------------------------------------------------------------------- #
-# _normalize_item — None semantics and defaults
-# --------------------------------------------------------------------------- #
 
 
 def test_normalize_item_maps_camelcase_to_snake_case() -> None:
@@ -101,11 +91,6 @@ def test_normalize_item_preserves_zero_stars_not_default() -> None:
     assert result["stargazers_count"] == 0
 
 
-# --------------------------------------------------------------------------- #
-# helpers
-# --------------------------------------------------------------------------- #
-
-
 def _gh_result(stdout: str = "[]", returncode: int = 0, stderr: str = "") -> MagicMock:
     """Build a fake CompletedProcess-like object for subprocess.run."""
     mock = MagicMock()
@@ -113,11 +98,6 @@ def _gh_result(stdout: str = "[]", returncode: int = 0, stderr: str = "") -> Mag
     mock.stdout = stdout
     mock.stderr = stderr
     return mock
-
-
-# --------------------------------------------------------------------------- #
-# _run_gh — the single subprocess funnel: timeout retry, transient retry
-# --------------------------------------------------------------------------- #
 
 
 def test_run_gh_returns_completed_process_on_success() -> None:
@@ -178,11 +158,6 @@ def test_run_gh_transient_oserror_then_timeout_raises_timeout() -> None:
     ):
         github._run_gh(["gh", "search", "repos"])
     assert run.call_count == 2
-
-
-# --------------------------------------------------------------------------- #
-# search_repos — mock only the subprocess boundary
-# --------------------------------------------------------------------------- #
 
 
 def test_search_repos_single_keyword_builds_expected_cmd() -> None:
@@ -315,19 +290,10 @@ def test_search_repos_generic_failure_raises_gh_error() -> None:
         github.search_repos(spec)
 
 
-# --------------------------------------------------------------------------- #
-# _multi_keyword_search — OR-merge, dedup by full_name, client-side sort
-# --------------------------------------------------------------------------- #
-
-
 def _multi_run_factory(
     responses: dict[str, Sequence[dict[str, Any]]],
 ) -> Any:
-    """Return a subprocess.run stand-in that keys its payload off the keyword.
-
-    The keyword is the final positional argv element appended by
-    _multi_keyword_search, so we read it from the command tail.
-    """
+    """A subprocess.run stand-in keyed off the keyword — the final positional argv element."""
 
     def fake_run(cmd: list[str], **_kwargs: Any) -> MagicMock:
         # The keyword sits just before "--sort"/"--limit" flags; find the last
@@ -428,11 +394,6 @@ def test_search_repos_command_not_found_in_stderr_raises_not_installed() -> None
         github.search_repos(spec)
 
 
-# --------------------------------------------------------------------------- #
-# get_repo — boundary behavior and input validation
-# --------------------------------------------------------------------------- #
-
-
 def test_get_repo_returns_parsed_json() -> None:
     payload = json.dumps({"full_name": "owner/repo", "stargazers_count": 3})
     with patch.object(subprocess, "run", return_value=_gh_result(payload)):
@@ -507,11 +468,6 @@ def test_get_repo_accepts_dotted_and_dashed_names() -> None:
     with patch.object(subprocess, "run", return_value=_gh_result("{}")) as run:
         github.get_repo("my-org", "my.repo_v2")
     assert run.call_args.args[0] == ["gh", "api", "repos/my-org/my.repo_v2"]
-
-
-# --------------------------------------------------------------------------- #
-# check_gh_auth — now raises instead of returning bool / printing
-# --------------------------------------------------------------------------- #
 
 
 def test_check_gh_auth_succeeds_silently_when_authenticated() -> None:

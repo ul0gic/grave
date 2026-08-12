@@ -1,9 +1,4 @@
-"""Tests for grave.view.
-
-Only ``_format_date`` is unit-testable for an exact value; the Rich rendering
-functions are smoke-tested for "does not raise and emits something" since their
-visual output is not a stable contract.
-"""
+"""Rich rendering is smoke-tested only — visual output is not a stable contract."""
 
 from __future__ import annotations
 

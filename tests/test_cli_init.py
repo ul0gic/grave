@@ -1,9 +1,4 @@
-"""Tests for grave.commands.init.cmd_init — interactive onboarding.
-
-``cmd_init`` shells out to gh and prompts via input(); both are mocked at their
-boundaries (subprocess.run, builtins.input). It creates no files — onboarding
-only checks prerequisites.
-"""
+"""cmd_init's boundaries (subprocess.run, builtins.input) are mocked; it writes no files."""
 
 from __future__ import annotations
 

@@ -1,8 +1,4 @@
-"""Shared test helpers (not a test module).
-
-Kept separate from conftest.py so it can be imported directly by test modules;
-conftest is reserved for fixtures and pytest hooks.
-"""
+"""Importable by test modules — conftest.py is reserved for fixtures and hooks."""
 
 from __future__ import annotations
 
@@ -10,11 +6,7 @@ from typing import Any
 
 
 def make_item(full_name: str = "owner/repo", **overrides: Any) -> dict[str, Any]:
-    """Build a complete normalized RepoItem-shaped dict for DB/save/display tests.
-
-    Defaults mirror what ``api._normalize_item`` produces so persistence tests
-    exercise realistic rows. Override any field via keyword arguments.
-    """
+    """A full RepoItem-shaped dict mirroring _normalize_item output; override via kwargs."""
     item: dict[str, Any] = {
         "full_name": full_name,
         "description": "a test repository",

@@ -1,9 +1,4 @@
-"""Property-based tests for the parsers and merge logic.
-
-Hypothesis earns its place on the query builder (``build_search_query``) and
-the date formatter: arbitrary input must either produce a well-formed result
-or raise the one documented exception — never an unexpected exception.
-"""
+"""Arbitrary input must yield a well-formed result or the one documented exception."""
 
 from __future__ import annotations
 
@@ -19,10 +14,6 @@ from grave.integrations import github
 from grave.models.search import SearchSpec
 from grave.services.query import build_search_query
 from grave.view.display import _format_date
-
-# --------------------------------------------------------------------------- #
-# build_search_query
-# --------------------------------------------------------------------------- #
 
 _keyword_text = st.text(min_size=1).filter(lambda s: s.strip() != "")
 
@@ -61,22 +52,12 @@ def test_build_search_query_display_reconstructs_keywords(keywords: list[str]) -
         assert spec.display() == ""
 
 
-# --------------------------------------------------------------------------- #
-# _format_date — never raises on arbitrary input
-# --------------------------------------------------------------------------- #
-
-
 @given(text=st.text())
 def test_format_date_never_raises(text: str) -> None:
     result = _format_date(text)
     assert isinstance(result, str)
     # Either a YYYY-MM-DD shape or the sentinel.
     assert result == "N/A" or len(result) == 10
-
-
-# --------------------------------------------------------------------------- #
-# _multi_keyword_search — dedup + sort invariants under overlap
-# --------------------------------------------------------------------------- #
 
 
 def _make_run(per_keyword: dict[str, list[dict[str, Any]]]) -> Any:

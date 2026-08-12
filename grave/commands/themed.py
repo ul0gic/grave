@@ -1,10 +1,4 @@
-"""Generic handler for the themed-lens commands (``morgue``, ``casket``).
-
-Both commands are the same search differing only in their data, which lives in
-:data:`grave.config.lenses.THEMED_LENSES`. The parser sets ``args.lens`` to the lens
-name via ``set_defaults``; this handler looks it up and renders it. A future
-lens is one table entry plus a subparser pointing here.
-"""
+"""One handler for all themed lenses — the parser sets args.lens via set_defaults."""
 
 from __future__ import annotations
 
