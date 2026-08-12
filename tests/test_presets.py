@@ -15,11 +15,7 @@ if TYPE_CHECKING:
 
 
 def _spec_for(preset: Preset) -> SearchSpec:
-    """Build a SearchSpec from a preset's fields.
-
-    Mirrors the conversion the CLI performs in ``_resolve_preset_spec``; query
-    building was moved out of the Preset model to break the presets→api cycle.
-    """
+    """Mirrors the preset→spec conversion resolve_preset_spec performs."""
     return build_search_query(
         keywords=preset.keywords or None,
         created_range=preset.created_range,
@@ -93,6 +89,13 @@ def test_preset_keywords_with_phrases_stay_intact() -> None:
     assert preset is not None
     spec = _spec_for(preset)
     assert "virtual world" in spec.keywords
+
+
+def test_google_code_refugees_keeps_export_phrase() -> None:
+    preset = get_preset("google-code-refugees")
+    assert preset is not None
+    spec = _spec_for(preset)
+    assert "exported from code.google.com" in spec.keywords
 
 
 def test_preset_qualifiers_reflect_fields() -> None:

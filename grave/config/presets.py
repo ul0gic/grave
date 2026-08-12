@@ -1,18 +1,10 @@
-"""Curated search preset definitions and accessors.
-
-This module holds the curated :class:`Preset` instances for discovering old,
-weird, and forgotten GitHub repositories, plus the helpers to list and look them
-up. Query building lives in the CLI layer, so this module depends only on the
-pure :class:`Preset` model.
-"""
+"""Pure data — query building lives in the command layer, never here."""
 
 from __future__ import annotations
 
 from grave.models.preset import Preset
 
-# Curated search presets for discovering forgotten GitHub repositories
 PRESETS = [
-    # ARCHAEOLOGY - Digging up old stuff
     Preset(
         name="ancient",
         description="GitHub's earliest repos (2008-2010)",
@@ -65,7 +57,6 @@ PRESETS = [
         category="archaeology",
         sort="stars",
     ),
-    # DEAD-LANGUAGES - Legacy and dead programming languages
     Preset(
         name="dead-lang",
         description="Projects in legacy/dead programming languages",
@@ -129,7 +120,16 @@ PRESETS = [
         category="dead-languages",
         sort="stars",
     ),
-    # ERAS - Technology time periods
+    Preset(
+        name="dead-lang-coffeescript",
+        description="CoffeeScript: the dialect ES6 made obsolete",
+        keywords=[],
+        language="CoffeeScript",
+        created_range="2010-01-01..2016-12-31",
+        pushed="<2018-01-01",
+        category="dead-languages",
+        sort="stars",
+    ),
     Preset(
         name="y2k-web",
         description="Y2K-era web tools and relics",
@@ -164,6 +164,24 @@ PRESETS = [
         sort="stars",
     ),
     Preset(
+        name="dead-frameworks",
+        description="The 2010-2014 frontend graveyard (Backbone, AngularJS 1.x)",
+        keywords=["backbone", "angularjs", "knockout", "ember"],
+        language="JavaScript",
+        created_range="2010-01-01..2014-12-31",
+        pushed="<2018-01-01",
+        category="eras",
+        sort="stars",
+    ),
+    Preset(
+        name="j2me-era",
+        description="Pre-smartphone mobile: J2ME, Symbian, WAP",
+        keywords=["j2me", "midlet", "symbian"],
+        created_range="2008-01-01..2013-12-31",
+        category="eras",
+        sort="stars",
+    ),
+    Preset(
         name="homebrew-fossils",
         description="Early macOS/Homebrew era tools",
         keywords=["homebrew", "macports", "fink", "osx"],
@@ -171,7 +189,6 @@ PRESETS = [
         category="eras",
         sort="stars",
     ),
-    # CULTURE - Internet culture and communities
     Preset(
         name="digital-utopia",
         description="Digital democracy and virtual world experiments",
@@ -213,6 +230,23 @@ PRESETS = [
         sort="stars",
     ),
     Preset(
+        name="google-code-refugees",
+        description="Projects exiled by the Google Code shutdown",
+        keywords=["googlecode", "exported from code.google.com"],
+        created_range="2008-01-01..2016-12-31",
+        category="culture",
+        sort="stars",
+    ),
+    Preset(
+        name="dead-social",
+        description="Clients and bots for social networks that no longer exist",
+        keywords=["vine api", "google plus api", "friendfeed", "orkut"],
+        created_range="2008-01-01..2016-12-31",
+        pushed="<2020-01-01",
+        category="culture",
+        sort="stars",
+    ),
+    Preset(
         name="bbs-era",
         description="Bulletin board systems and BBS door games",
         keywords=["bbs", "bulletin board", "door game", "fidonet", "telnet"],
@@ -228,7 +262,6 @@ PRESETS = [
         category="culture",
         sort="stars",
     ),
-    # SCIENCE - Research and experimental projects
     Preset(
         name="weird-science",
         description="Experimental science and simulation projects",
@@ -258,38 +291,20 @@ PRESETS = [
 
 
 def list_presets(category: str | None = None) -> list[Preset]:
-    """Get list of all available search presets.
-
-    Args:
-        category: Optional category filter to return only presets in that category
-
-    Returns:
-        List of Preset objects, optionally filtered by category
-    """
+    """List presets, optionally filtered by category."""
     if category is None:
         return PRESETS
     return [p for p in PRESETS if p.category == category]
 
 
 def list_categories() -> list[str]:
-    """Get sorted list of unique category names.
-
-    Returns:
-        Sorted list of category names
-    """
+    """Sorted unique category names."""
     categories = {preset.category for preset in PRESETS}
     return sorted(categories)
 
 
 def get_preset(name: str) -> Preset | None:
-    """Get a preset by name.
-
-    Args:
-        name: Preset name identifier
-
-    Returns:
-        Preset object if found, None otherwise
-    """
+    """Look up a preset by name; None when unknown."""
     for preset in PRESETS:
         if preset.name == name:
             return preset
