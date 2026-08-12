@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING
 
-from grave.commands.specs import split_owner_repo
+from grave.commands.specs import abandoned_to_pushed, split_owner_repo
 from grave.view.output import emit_results
 
 if TYPE_CHECKING:
@@ -22,11 +22,10 @@ def cmd_rabbit_hole(args: argparse.Namespace) -> None:
     owner, repo = split_owner_repo(args.repo)
     repo_data = get_repo(owner, repo)
 
-    language = repo_data.get("language")
+    language = args.language or repo_data.get("language")
     created_at = repo_data.get("created_at", "")
     topics = repo_data.get("topics", [])
 
-    # created_at is ISO format: "2008-04-10T12:34:56Z"
     created_year = int(created_at.split("-")[0]) if created_at else None
 
     # Similar repos = same language, up to 3 shared topics, ±2 years.
@@ -34,10 +33,13 @@ def cmd_rabbit_hole(args: argparse.Namespace) -> None:
     if created_year:
         created_range = f"{created_year - 2}-01-01..{created_year + 2}-12-31"
 
+    pushed = abandoned_to_pushed(args.abandoned) if args.abandoned is not None else None
     spec = build_search_query(
         keywords=topics[:3] or None,
         created_range=created_range,
         language=language,
+        stars_range=args.stars,
+        pushed=pushed,
     )
     response = search_repos(spec, limit=args.limit)
     items = response.get("items", [])

@@ -1,10 +1,4 @@
-"""Argument-to-SearchSpec helpers shared by the scan and export commands.
-
-These translate parsed argparse namespaces into a :class:`~grave.models.search.SearchSpec`,
-applying era/abandonment precedence rules and resolving named presets. Invalid
-user input raises :class:`~grave.errors.UsageError` for the dispatch layer to
-render (exit 2); they never print or exit themselves.
-"""
+"""These helpers raise UsageError for the dispatch layer — they never print or exit."""
 
 from __future__ import annotations
 
@@ -36,11 +30,7 @@ _SEARCH_PARAMS = (
 
 
 def build_custom_spec(args: argparse.Namespace) -> SearchSpec:
-    """Build a SearchSpec from custom --keyword/--created/--era/etc. flags.
-
-    Raises:
-        UsageError: If no search parameter is given or a value is out of range.
-    """
+    """Build a SearchSpec from custom search flags; at least one is required."""
     if not any(getattr(args, name) is not None for name in _SEARCH_PARAMS):
         raise UsageError("at least one search parameter is required (or use --preset)")
 
@@ -56,10 +46,7 @@ def build_custom_spec(args: argparse.Namespace) -> SearchSpec:
             raise UsageError(f"invalid --dead-since year '{args.dead_since}'")
         pushed_filter = f"<{args.dead_since}-01-01"
     elif args.abandoned is not None:
-        if args.abandoned < 0:
-            raise UsageError(f"invalid --abandoned years '{args.abandoned}'")
-        cutoff_year = date.today().year - args.abandoned
-        pushed_filter = f"<{cutoff_year}-01-01"
+        pushed_filter = abandoned_to_pushed(args.abandoned)
 
     return build_search_query(
         keywords=args.keyword,
@@ -70,12 +57,16 @@ def build_custom_spec(args: argparse.Namespace) -> SearchSpec:
     )
 
 
-def resolve_preset_spec(args: argparse.Namespace) -> tuple[Preset, SearchSpec]:
-    """Resolve a preset by name and build its SearchSpec, applying CLI overrides.
+def abandoned_to_pushed(years: int) -> str:
+    """Translate an --abandoned years value into a pushed:<date qualifier."""
+    if years < 0:
+        raise UsageError(f"invalid --abandoned years '{years}'")
+    cutoff_year = date.today().year - years
+    return f"<{cutoff_year}-01-01"
 
-    Raises:
-        UsageError: If the named preset does not exist.
-    """
+
+def resolve_preset_spec(args: argparse.Namespace) -> tuple[Preset, SearchSpec]:
+    """Resolve a preset by name and build its SearchSpec, applying CLI overrides."""
     preset = get_preset(args.preset)
     if preset is None:
         names = "\n".join(f"  - {p.name}" for p in list_presets())
@@ -92,11 +83,7 @@ def resolve_preset_spec(args: argparse.Namespace) -> tuple[Preset, SearchSpec]:
 
 
 def split_owner_repo(repo: str) -> tuple[str, str]:
-    """Split an 'owner/repo' argument.
-
-    Raises:
-        UsageError: If the value is not exactly 'owner/repo'.
-    """
+    """Split an 'owner/repo' argument, rejecting anything not exactly two parts."""
     parts = repo.split("/")
     if len(parts) != 2 or not all(parts):
         raise UsageError(

@@ -8,6 +8,7 @@ grave is stateless, so there is nothing to isolate on disk.
 from __future__ import annotations
 
 import json
+from datetime import date
 from typing import TYPE_CHECKING, Any
 from unittest.mock import patch
 
@@ -310,6 +311,60 @@ def test_rabbit_hole_builds_spec_from_repo(monkeypatch: pytest.MonkeyPatch) -> N
     qualifiers = dict(spec.qualifiers)
     assert qualifiers["language"] == "Python"
     assert qualifiers["created"] == "2008-01-01..2012-12-31"
+
+
+def test_rabbit_hole_filters_override_repo_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
+    repo = {
+        "full_name": "owner/repo",
+        "language": "Python",
+        "created_at": "2010-04-10T00:00:00Z",
+        "topics": ["cli"],
+    }
+    captured: dict[str, Any] = {}
+
+    def fake_search(spec: Any, limit: int = 30, sort: Any = None) -> dict[str, Any]:
+        captured["spec"] = spec
+        return {"items": []}
+
+    with (
+        patch("grave.integrations.github.check_gh_auth", return_value=None),
+        patch("grave.integrations.github.get_repo", return_value=repo),
+        patch("grave.integrations.github.search_repos", side_effect=fake_search),
+    ):
+        run_cli(
+            [
+                "rabbit-hole",
+                "owner/repo",
+                "--language",
+                "Ruby",
+                "--stars",
+                "10..500",
+                "--abandoned",
+                "8",
+                "--json",
+            ],
+            monkeypatch,
+        )
+
+    qualifiers = dict(captured["spec"].qualifiers)
+    assert qualifiers["language"] == "Ruby"
+    assert qualifiers["stars"] == "10..500"
+    cutoff_year = date.today().year - 8
+    assert qualifiers["pushed"] == f"<{cutoff_year}-01-01"
+
+
+def test_rabbit_hole_negative_abandoned_exits_2(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    repo = {"full_name": "owner/repo", "language": None, "created_at": "", "topics": []}
+    with (
+        patch("grave.integrations.github.check_gh_auth", return_value=None),
+        patch("grave.integrations.github.get_repo", return_value=repo),
+        pytest.raises(SystemExit) as exc,
+    ):
+        run_cli(["rabbit-hole", "owner/repo", "--abandoned", "-3", "--json"], monkeypatch)
+    assert exc.value.code == 2
+    assert "invalid --abandoned" in capsys.readouterr().err
 
 
 # --------------------------------------------------------------------------- #

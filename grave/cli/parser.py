@@ -281,12 +281,28 @@ def main() -> None:
         epilog="""Examples:
   grave rabbit-hole torvalds/linux
   grave rabbit-hole microsoft/MS-DOS --limit 20
-  grave rabbit-hole rails/rails --json""",
+  grave rabbit-hole rails/rails --json
+  grave rabbit-hole rails/rails --language Ruby --abandoned 8
+  grave rabbit-hole owner/repo --stars '10..500'""",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser_rabbit_hole.add_argument(
         "repo",
         help="repository in 'owner/repo' format",
+    )
+    parser_rabbit_hole.add_argument(
+        "--language",
+        help="override the language filter (default: the source repo's language)",
+    )
+    parser_rabbit_hole.add_argument(
+        "--stars",
+        help="stars filter (e.g., '>100', '10..50')",
+    )
+    parser_rabbit_hole.add_argument(
+        "--abandoned",
+        type=int,
+        metavar="YEARS",
+        help="only show repos not pushed in N years",
     )
     parser_rabbit_hole.add_argument(
         "--limit",
