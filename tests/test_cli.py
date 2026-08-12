@@ -576,15 +576,10 @@ def test_scan_renders_table_when_not_json(
     assert "Found 1 repositories" in out
 
 
-def test_dig_open_launches_browser(
+def test_dig_open_flag_is_gone(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    repo = {"full_name": "a/b", "html_url": "https://github.com/a/b", "topics": []}
-    with (
-        patch("grave.integrations.github.check_gh_auth", return_value=None),
-        patch("grave.integrations.github.get_repo", return_value=repo),
-        patch("webbrowser.open") as wb,
-    ):
+    with pytest.raises(SystemExit) as exc:
         run_cli(["dig", "a/b", "--open"], monkeypatch)
-    wb.assert_called_once_with("https://github.com/a/b")
-    assert "Opening" in capsys.readouterr().out
+    assert exc.value.code == 2
+    assert "--open" in capsys.readouterr().err

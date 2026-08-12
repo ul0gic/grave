@@ -25,11 +25,3 @@ def cmd_dig(args: argparse.Namespace) -> None:
         print(json.dumps(repo_data, indent=2))
     else:
         display_repo_detail(repo_data)
-
-    if args.open:
-        import webbrowser
-
-        url = repo_data.get("html_url")
-        if url:
-            print(f"Opening {url} in browser...")
-            webbrowser.open(url)

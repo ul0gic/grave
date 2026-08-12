@@ -136,8 +136,7 @@ def main() -> None:
         epilog="""Examples:
   grave dig torvalds/linux
   grave dig microsoft/MS-DOS
-  grave dig torvalds/linux --json
-  grave dig rails/rails --open""",
+  grave dig torvalds/linux --json""",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser_dig.add_argument(
@@ -148,11 +147,6 @@ def main() -> None:
         "--json",
         action="store_true",
         help="output raw JSON instead of formatted panel",
-    )
-    parser_dig.add_argument(
-        "--open",
-        action="store_true",
-        help="open repository in browser after displaying details",
     )
     parser_dig.set_defaults(func=cmd_dig)
 
