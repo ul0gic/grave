@@ -10,13 +10,12 @@ if TYPE_CHECKING:
     import argparse
 
 
-def cmd_init(args: argparse.Namespace) -> None:
+def cmd_init(_args: argparse.Namespace) -> None:
     """Interactive onboarding with prerequisite checks."""
     from rich.console import Console
 
     console = Console()
 
-    # Welcome banner
     console.print()
     console.print(
         "⚰️  GRAVE — Git Repository Abandonment & Vintage Explorer",
@@ -30,7 +29,6 @@ def cmd_init(args: argparse.Namespace) -> None:
 
     all_checks_passed = True
 
-    # Check 1: Python version
     python_version = sys.version_info
     if python_version >= (3, 13):
         py_ver = f"✓ Python {python_version.major}.{python_version.minor}.{python_version.micro}"
@@ -43,7 +41,6 @@ def cmd_init(args: argparse.Namespace) -> None:
         console.print(py_ver, style="red")
         all_checks_passed = False
 
-    # Check 2: gh CLI installed
     gh_version = None
     try:
         result = subprocess.run(
@@ -65,7 +62,6 @@ def cmd_init(args: argparse.Namespace) -> None:
         console.print("✗ gh CLI not found", style="red")
         all_checks_passed = False
 
-    # Check 3: gh authenticated
     gh_authenticated = False
     gh_username = None
     if gh_version:
@@ -99,21 +95,20 @@ def cmd_init(args: argparse.Namespace) -> None:
 
     console.print()
 
-    # If gh is installed but not authenticated, offer to authenticate
     if gh_version and not gh_authenticated:
         try:
             prompt = "Would you like to authenticate now? [Y/n] "
             response = input(prompt).strip().lower()
-            if response == "" or response == "y":
+            if response in {"", "y"}:
                 console.print()
                 console.print("Launching GitHub authentication...", style="bold")
                 console.print()
-                # Run gh auth login with inherited stdio
                 login_result = subprocess.run(
                     ["gh", "auth", "login"],
                     stdin=sys.stdin,
                     stdout=sys.stdout,
                     stderr=sys.stderr,
+                    check=False,
                 )
                 if login_result.returncode == 0:
                     console.print()
@@ -133,7 +128,6 @@ def cmd_init(args: argparse.Namespace) -> None:
             console.print("Authentication cancelled.", style="yellow")
             all_checks_passed = False
 
-    # If any check failed, exit
     if not all_checks_passed or not gh_authenticated:
         console.print()
         msg = "Setup incomplete. Please resolve the issues above."

@@ -16,7 +16,6 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.13",
-    "Topic :: Software Development :: Libraries",
     "Topic :: Utilities",
 ]
 dependencies = [
@@ -38,6 +37,7 @@ dev = [
     "pytest>=8.0.0",
     "hypothesis>=6.100.0",
     "pytest-cov>=5.0.0",
+    "pytest-timeout>=2.3.0",
 ]
 
 [tool.ruff]
@@ -67,25 +67,39 @@ select = [
     "ISC",  # flake8-implicit-str-concat
     "ERA",  # eradicate (no commented-out code)
     "Q",    # flake8-quotes (quote consistency)
+    "ASYNC", # async correctness
+    "DTZ",  # timezone-aware datetime usage
+    "LOG",  # logging correctness
+    "G",    # logging format
+    "A",    # builtin shadowing
+    "ARG",  # unused function arguments
+    "BLE",  # blind exception catches
+    "TRY",  # exception-handling hygiene
+    "PL",   # pylint-derived correctness rules
 ]
 ignore = [
     "S311",  # standard PRNG — random.choice() selects display presets, not crypto material
-    "S603",  # subprocess call without check=True — intentional, gh exit codes are inspected manually
-    "S607",  # partial executable path — "gh" is on PATH by design
     "ISC001", # implicit str concat on one line — conflicts with ruff formatter
+    "TRY003", # messages at raise sites are the CLI's user-facing error text
+    "PLC0415", # lazy imports inside commands are intentional — they keep CLI startup fast
+    "PLR2004", # literal thresholds/widths in a small CLI are self-evident; naming them adds noise
 ]
 
 [tool.ruff.lint.isort]
 known-first-party = ["grave"]
 
 [tool.ruff.lint.per-file-ignores]
-# Test code intentionally relaxes a few security/style rules that only make
-# sense for production code:
-#   S101 — pytest's whole assertion model is `assert`; flagging it is noise.
-#   S106 — hardcoded "passwords" here are fake fixture values (e.g. dummy tokens
-#          in gh-auth stderr), never real secrets.
-#   INP001 — tests/ is a test root, not an importable package; no __init__ needed.
-"tests/**" = ["S101", "S106", "INP001"]
+# S603/S607 are scoped here, not global — new subprocess sites elsewhere get flagged.
+"grave/integrations/github.py" = ["S603", "S607"]  # the intentional gh subprocess wrapper
+"grave/commands/init.py" = ["S603", "S607", "PLR0912", "PLR0915"]  # gh checks; linear interactive wizard
+"grave/cli/parser.py" = ["PLR0915"]  # declarative argparse tree — long by nature, not complex
+"grave/commands/specs.py" = ["DTZ011"]  # --abandoned/--dead-since cutoffs use the user's local date
+# Tests relax rules that only make sense for production code: assert is pytest's
+# model (S101), fake tokens aren't secrets (S106), no __init__ in a test root
+# (INP001), mock signatures have unused params (ARG001), literal expectations are
+# the point (PLR2004), local-date math mirrors specs.py (DTZ011), and subprocess
+# smoke tests run trusted argv lists (S603/S607).
+"tests/**" = ["S101", "S106", "INP001", "ARG001", "PLR2004", "DTZ011", "S603", "S607"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -115,6 +129,7 @@ mypy_path = "."
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q --cov=grave --cov-report=term-missing"
+timeout = 60
 
 [tool.coverage.run]
 source = ["grave"]
