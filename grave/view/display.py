@@ -1,8 +1,4 @@
-"""Rich terminal display formatting for grave output.
-
-This module handles all terminal output formatting using the rich library,
-including tables for search results and detailed panels for repository info.
-"""
+"""Rich tables and panels for terminal output."""
 
 from __future__ import annotations
 
@@ -22,11 +18,7 @@ console = Console()
 
 
 def display_results(repos: list[RepoItem]) -> None:
-    """Display search results as a rich table.
-
-    Args:
-        repos: List of normalized repository items from a search or the database
-    """
+    """Render results as a numbered table, or guidance when empty."""
     if not repos:
         console.print("\n[yellow]No repositories found.[/yellow]\n")
         console.print("Try:", style="bold")
@@ -41,6 +33,7 @@ def display_results(repos: list[RepoItem]) -> None:
 
     console.print(f"\nFound {len(repos)} repositories\n")
     table = Table(show_header=True, header_style="bold cyan")
+    table.add_column("#", justify="right", style="dim")
     table.add_column("Repo", style="bold", no_wrap=True)
     table.add_column("Description", max_width=60)
     table.add_column("Language")
@@ -48,7 +41,7 @@ def display_results(repos: list[RepoItem]) -> None:
     table.add_column("Created")
     table.add_column("Last Push")
 
-    for repo in repos:
+    for index, repo in enumerate(repos, start=1):
         full_name = repo.get("full_name", "N/A")
         html_url = repo.get("html_url", "")
         repo_link = f"[link={html_url}]{full_name}[/link]" if html_url else full_name
@@ -67,6 +60,7 @@ def display_results(repos: list[RepoItem]) -> None:
         pushed_at = repo.get("pushed_at", "")
         pushed_display = _format_date(pushed_at) if pushed_at else "N/A"
         table.add_row(
+            str(index),
             repo_link,
             description,
             language,
@@ -79,14 +73,7 @@ def display_results(repos: list[RepoItem]) -> None:
 
 
 def _format_date(iso_date: str) -> str:
-    """Format ISO 8601 date string to YYYY-MM-DD.
-
-    Args:
-        iso_date: ISO 8601 formatted date string (e.g., '2010-03-15T12:00:00Z')
-
-    Returns:
-        Date formatted as YYYY-MM-DD
-    """
+    """Trim an ISO 8601 timestamp to YYYY-MM-DD, or "N/A" when unparseable."""
     try:
         dt = datetime.fromisoformat(iso_date)
         return dt.strftime("%Y-%m-%d")
@@ -95,11 +82,7 @@ def _format_date(iso_date: str) -> str:
 
 
 def display_repo_detail(repo: dict[str, Any]) -> None:
-    """Display detailed repository information in a rich panel.
-
-    Args:
-        repo: Raw repository dict from the GitHub REST API (get_repo)
-    """
+    """Render a raw get_repo API record as a detail panel."""
     full_name = repo.get("full_name", "N/A")
     description = repo.get("description", "No description available")
     header = Text()
@@ -152,12 +135,7 @@ def display_repo_detail(repo: dict[str, Any]) -> None:
 
 
 def display_presets(presets: list[Preset], category: str | None = None) -> None:
-    """Display list of available presets grouped by category.
-
-    Args:
-        presets: List of Preset objects
-        category: Optional category filter (only used for title display)
-    """
+    """Render presets grouped by category; the category arg only affects the title."""
     from collections import defaultdict
 
     by_category: defaultdict[str, list[Preset]] = defaultdict(list)
