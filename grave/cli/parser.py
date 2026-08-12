@@ -12,6 +12,7 @@ import argparse
 import sys
 from importlib.metadata import version
 
+from grave.commands.completion import cmd_completion
 from grave.commands.dig import cmd_dig
 from grave.commands.export import cmd_export
 from grave.commands.init import cmd_init
@@ -368,6 +369,24 @@ def main() -> None:
         help="output raw JSON instead of formatted table",
     )
     parser_casket.set_defaults(func=cmd_themed, lens="casket")
+
+    # grave completion
+    parser_completion = subparsers.add_parser(
+        "completion",
+        help="print a shell tab-completion script",
+        description="Print a tab-completion script for your shell, generated from the live CLI.",
+        epilog="""Examples:
+  grave completion bash >> ~/.bashrc
+  grave completion zsh  >> ~/.zshrc""",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser_completion.add_argument(
+        "shell",
+        choices=["bash", "zsh"],
+        help="shell to generate the completion script for",
+    )
+    # The completion command introspects the full parser tree to stay in sync.
+    parser_completion.set_defaults(func=cmd_completion, root_parser=parser)
 
     args = parser.parse_args()
 
