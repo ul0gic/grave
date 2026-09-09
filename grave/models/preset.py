@@ -7,7 +7,7 @@ from dataclasses import dataclass
 
 @dataclass
 class Preset:
-    """A curated search: pure fields only, query building happens in the command layer."""
+    """A curated search: pure fields only, query building happens in the service layer."""
 
     name: str
     description: str
@@ -18,3 +18,7 @@ class Preset:
     pushed: str | None = None
     category: str = "general"
     sort: str = "stars"
+    archived: bool | None = None
+    match: str | None = None
+    size: str | None = None
+    include_forks: str | None = None

@@ -1,0 +1,71 @@
+from __future__ import annotations
+
+from grave.models.preset import Preset
+
+PRESETS = [
+    Preset(
+        name="y2k-web",
+        description="Y2K-era web tools and relics",
+        keywords=["cgi", "guestbook", "webring", "geocities"],
+        created_range="2008-01-01..2012-12-31",
+        pushed="<2015-01-01",
+        category="eras",
+        sort="stars",
+    ),
+    Preset(
+        name="pre-npm",
+        description="JavaScript before npm existed (2008-2011)",
+        keywords=["jquery", "prototype", "mootools", "scriptaculous"],
+        language="JavaScript",
+        created_range="2008-01-01..2011-12-31",
+        pushed="<2014-01-01",
+        category="eras",
+        sort="stars",
+    ),
+    Preset(
+        name="pre-docker",
+        description="Infrastructure before containers (Puppet/Chef/Vagrant)",
+        keywords=["puppet", "chef", "vagrant", "capistrano", "fabric"],
+        created_range="2008-01-01..2013-12-31",
+        pushed="<2016-01-01",
+        category="eras",
+        sort="stars",
+    ),
+    Preset(
+        name="pre-git",
+        description="CVS/SVN migration tools and pre-git relics",
+        keywords=["cvs", "svn", "subversion", "mercurial", "bazaar"],
+        created_range="2008-01-01..2012-12-31",
+        pushed="<2015-01-01",
+        category="eras",
+        sort="stars",
+    ),
+    Preset(
+        name="dead-frameworks",
+        description="The 2010-2014 frontend graveyard (Backbone, AngularJS 1.x)",
+        keywords=["backbone", "angularjs", "knockout", "ember"],
+        language="JavaScript",
+        created_range="2010-01-01..2014-12-31",
+        pushed="<2018-01-01",
+        category="eras",
+        sort="stars",
+    ),
+    Preset(
+        name="j2me-era",
+        description="Pre-smartphone mobile: J2ME, Symbian, WAP",
+        keywords=["j2me", "midlet", "symbian"],
+        created_range="2008-01-01..2013-12-31",
+        pushed="<2016-01-01",
+        category="eras",
+        sort="stars",
+    ),
+    Preset(
+        name="homebrew-fossils",
+        description="Early macOS/Homebrew era tools",
+        keywords=["homebrew", "macports", "fink", "osx"],
+        created_range="2008-01-01..2013-12-31",
+        pushed="<2016-01-01",
+        category="eras",
+        sort="stars",
+    ),
+]

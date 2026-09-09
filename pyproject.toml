@@ -1,6 +1,6 @@
 [project]
 name = "grave-cli"
-version = "3.1.0"
+version = "3.2.0"
 description = "GRAVE — Git Repository Abandonment & Vintage Explorer. Dig up dead, forgotten, and vintage GitHub repositories."
 readme = "pypi.md"
 license = "MIT"
@@ -76,6 +76,12 @@ select = [
     "BLE",  # blind exception catches
     "TRY",  # exception-handling hygiene
     "PL",   # pylint-derived correctness rules
+    "C90",  # mccabe cyclomatic complexity
+    "FBT",  # boolean-trap positional flags
+    "PGH",  # pygrep-hooks: no blanket noqa / type: ignore
+    "T10",  # leftover debugger calls
+    "SLF",  # private member access across module boundaries
+    "FA",   # enforce `from __future__ import annotations`
 ]
 ignore = [
     "S311",  # standard PRNG — random.choice() selects display presets, not crypto material
@@ -83,6 +89,7 @@ ignore = [
     "TRY003", # messages at raise sites are the CLI's user-facing error text
     "PLC0415", # lazy imports inside commands are intentional — they keep CLI startup fast
     "PLR2004", # literal thresholds/widths in a small CLI are self-evident; naming them adds noise
+    "FBT003", # `flag=True` at call sites is the readable form; FBT001/002 still police definitions
 ]
 
 [tool.ruff.lint.isort]
@@ -91,15 +98,17 @@ known-first-party = ["grave"]
 [tool.ruff.lint.per-file-ignores]
 # S603/S607 are scoped here, not global — new subprocess sites elsewhere get flagged.
 "grave/integrations/github.py" = ["S603", "S607"]  # the intentional gh subprocess wrapper
-"grave/commands/init.py" = ["S603", "S607", "PLR0912", "PLR0915"]  # gh checks; linear interactive wizard
+"grave/commands/init.py" = ["S603", "S607", "PLR0912", "PLR0915", "C901"]  # gh checks; linear interactive wizard
+"grave/commands/completion.py" = ["SLF001"]  # argparse exposes its action tree only via _actions
 "grave/cli/parser.py" = ["PLR0915"]  # declarative argparse tree — long by nature, not complex
 "grave/commands/specs.py" = ["DTZ011"]  # --abandoned/--dead-since cutoffs use the user's local date
 # Tests relax rules that only make sense for production code: assert is pytest's
 # model (S101), fake tokens aren't secrets (S106), no __init__ in a test root
 # (INP001), mock signatures have unused params (ARG001), literal expectations are
 # the point (PLR2004), local-date math mirrors specs.py (DTZ011), and subprocess
-# smoke tests run trusted argv lists (S603/S607).
-"tests/**" = ["S101", "S106", "INP001", "ARG001", "PLR2004", "DTZ011", "S603", "S607"]
+# smoke tests run trusted argv lists (S603/S607), fakes take bare bool params (FBT001),
+# and tests reach private helpers on purpose (SLF001).
+"tests/**" = ["S101", "S106", "INP001", "ARG001", "PLR2004", "DTZ011", "S603", "S607", "FBT001", "SLF001"]
 
 [tool.ruff.format]
 quote-style = "double"

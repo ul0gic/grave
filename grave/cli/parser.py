@@ -16,6 +16,7 @@ from grave.commands.random import cmd_random
 from grave.commands.scan import cmd_scan
 from grave.commands.themed import cmd_themed
 from grave.config.eras import ERAS
+from grave.config.presets import list_categories
 
 
 def main() -> None:
@@ -56,7 +57,9 @@ def main() -> None:
   grave scan --keyword web --created "2008-01-01..2010-12-31" --language Python
   grave scan --era y2k --keyword web
   grave scan --era early-github --language Ruby
-  grave scan --dead-since 2015 --keyword python --limit 5""",
+  grave scan --dead-since 2015 --keyword python --limit 5
+  grave scan --preset proto-smartwatch
+  grave scan --keyword "home automation" --archived true""",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser_scan.add_argument(
@@ -100,6 +103,11 @@ def main() -> None:
     parser_scan.add_argument(
         "--stars",
         help="stars filter (e.g., '>100', '10..50')",
+    )
+    parser_scan.add_argument(
+        "--archived",
+        choices=["true", "false"],
+        help="filter on GitHub's archived flag",
     )
     parser_scan.add_argument(
         "--sort",
@@ -154,7 +162,7 @@ def main() -> None:
     parser_presets.add_argument(
         "--category",
         metavar="CATEGORY",
-        help=("filter presets by category (archaeology, culture, dead-languages, eras, science)"),
+        help=f"filter presets by category ({', '.join(list_categories())})",
     )
     parser_presets.set_defaults(func=cmd_presets)
 
@@ -214,6 +222,11 @@ def main() -> None:
         help="stars filter (e.g., '>100', '10..50')",
     )
     parser_export.add_argument(
+        "--archived",
+        choices=["true", "false"],
+        help="filter on GitHub's archived flag",
+    )
+    parser_export.add_argument(
         "--sort",
         choices=["stars", "forks", "updated"],
         default="stars",
@@ -240,8 +253,14 @@ def main() -> None:
         epilog="""Examples:
   grave random
   grave random --limit 5
+  grave random --category ahead-of-time
   grave random --json""",
         formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser_random.add_argument(
+        "--category",
+        metavar="CATEGORY",
+        help=f"restrict the draw to one category ({', '.join(list_categories())})",
     )
     parser_random.add_argument(
         "--limit",

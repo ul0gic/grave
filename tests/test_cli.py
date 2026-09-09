@@ -446,7 +446,7 @@ def test_random_runs_with_a_preset(
     assert payload[0]["full_name"] == "rand/repo"
 
 
-def test_morgue_uses_fork_keywords(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_morgue_searches_forks_only(monkeypatch: pytest.MonkeyPatch) -> None:
     captured: dict[str, Any] = {}
 
     def fake_search(spec: Any, limit: int = 30, sort: Any = None) -> dict[str, Any]:
@@ -459,8 +459,83 @@ def test_morgue_uses_fork_keywords(monkeypatch: pytest.MonkeyPatch) -> None:
     ):
         run_cli(["morgue", "--json"], monkeypatch)
 
-    assert "fork" in captured["spec"].keywords
-    assert dict(captured["spec"].qualifiers)["pushed"] == "<2018-01-01"
+    qual = dict(captured["spec"].qualifiers)
+    assert qual["include-forks"] == "only"
+    assert qual["pushed"] == "<2018-01-01"
+
+
+def test_casket_uses_archived_flag(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured: dict[str, Any] = {}
+
+    def fake_search(spec: Any, limit: int = 30, sort: Any = None) -> dict[str, Any]:
+        captured["spec"] = spec
+        return {"items": []}
+
+    with (
+        patch("grave.integrations.github.check_gh_auth", return_value=None),
+        patch("grave.integrations.github.search_repos", side_effect=fake_search),
+    ):
+        run_cli(["casket", "--json"], monkeypatch)
+
+    assert dict(captured["spec"].qualifiers)["archived"] == "true"
+
+
+def test_random_category_restricts_the_draw(monkeypatch: pytest.MonkeyPatch) -> None:
+    from grave.config.presets import list_presets
+
+    chosen: list[Any] = []
+
+    def fake_choice(options: Any) -> Any:
+        chosen.append(list(options))
+        return options[0]
+
+    monkeypatch.setattr("random.choice", fake_choice)
+    with (
+        patch("grave.integrations.github.check_gh_auth", return_value=None),
+        patch("grave.integrations.github.search_repos", return_value=_search_items("a/b")),
+    ):
+        run_cli(["random", "--category", "human", "--json"], monkeypatch)
+
+    assert chosen[0] == list_presets(category="human")
+    assert all(p.category == "human" for p in chosen[0])
+
+
+def test_random_unknown_category_exits_2(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    with pytest.raises(SystemExit) as exc:
+        run_cli(["random", "--category", "nope"], monkeypatch)
+    assert exc.value.code == 2
+    assert "invalid category" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize(("flag", "expected"), [("true", "true"), ("false", "false")])
+def test_scan_archived_flag_routes_to_qualifier(
+    monkeypatch: pytest.MonkeyPatch, flag: str, expected: str
+) -> None:
+    captured: dict[str, Any] = {}
+
+    def fake_search(spec: Any, limit: int = 30, sort: Any = None) -> dict[str, Any]:
+        captured["spec"] = spec
+        return {"items": []}
+
+    with (
+        patch("grave.integrations.github.check_gh_auth", return_value=None),
+        patch("grave.integrations.github.search_repos", side_effect=fake_search),
+    ):
+        run_cli(["scan", "--archived", flag, "--json"], monkeypatch)
+
+    assert dict(captured["spec"].qualifiers)["archived"] == expected
+
+
+def test_scan_archived_alone_satisfies_search_param_requirement(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    with (
+        patch("grave.integrations.github.check_gh_auth", return_value=None),
+        patch("grave.integrations.github.search_repos", return_value=_search_items("a/b")),
+    ):
+        run_cli(["export", "--archived", "true", "--format", "ndjson"], monkeypatch)
 
 
 def test_casket_applies_language_filter(monkeypatch: pytest.MonkeyPatch) -> None:

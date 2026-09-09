@@ -2,7 +2,22 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import NamedTuple
+
+
+@dataclass(frozen=True)
+class SearchFilters:
+    """Every GitHub qualifier grave knows how to pass; None means "not filtered"."""
+
+    created_range: str | None = None
+    language: str | None = None
+    stars_range: str | None = None
+    pushed: str | None = None
+    archived: bool | None = None
+    match: str | None = None
+    size: str | None = None
+    include_forks: str | None = None
 
 
 class SearchSpec(NamedTuple):

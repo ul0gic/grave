@@ -11,7 +11,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from grave.integrations import github
-from grave.models.search import SearchSpec
+from grave.models.search import SearchFilters, SearchSpec
 from grave.services.query import build_search_query
 from grave.view.display import _format_date
 
@@ -26,20 +26,42 @@ def test_build_search_query_keywords_survive_unsplit(keywords: list[str]) -> Non
     assert len(spec.keywords) == len(keywords)
 
 
+_QUALIFIER_ORDER = [
+    "created",
+    "language",
+    "stars",
+    "pushed",
+    "archived",
+    "match",
+    "size",
+    "include-forks",
+]
+
+_optional_text = st.one_of(st.none(), st.text(min_size=1))
+
+
 @given(
     keywords=st.lists(_keyword_text, max_size=5),
-    language=st.one_of(st.none(), st.text(min_size=1)),
-    stars=st.one_of(st.none(), st.text(min_size=1)),
+    filters=st.builds(
+        SearchFilters,
+        created_range=_optional_text,
+        language=_optional_text,
+        stars_range=_optional_text,
+        pushed=_optional_text,
+        archived=st.one_of(st.none(), st.booleans()),
+        match=_optional_text,
+        size=_optional_text,
+        include_forks=_optional_text,
+    ),
 )
-def test_build_search_query_qualifier_presence_is_order_stable(
-    keywords: list[str], language: str | None, stars: str | None
+def test_build_search_query_qualifier_order_is_stable(
+    keywords: list[str], filters: SearchFilters
 ) -> None:
-    spec = build_search_query(keywords=keywords, language=language, stars_range=stars)
+    spec = build_search_query(keywords=keywords, filters=filters)
     qual_names = [name for name, _ in spec.qualifiers]
-    # The build order is fixed: created, language, stars, pushed. Here only
-    # language and stars may appear, and language must precede stars.
-    if "language" in qual_names and "stars" in qual_names:
-        assert qual_names.index("language") < qual_names.index("stars")
+    assert len(qual_names) == len(set(qual_names))
+    assert qual_names == [q for q in _QUALIFIER_ORDER if q in qual_names]
+    assert ("archived" in qual_names) == (filters.archived is not None)
 
 
 @given(keywords=st.lists(_keyword_text.filter(lambda s: " " not in s), max_size=6))

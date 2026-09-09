@@ -182,6 +182,30 @@ def test_search_repos_pushed_qualifier_maps_to_updated_flag() -> None:
     assert cmd[cmd.index("--updated") + 1] == "<2015-01-01"
 
 
+@pytest.mark.parametrize(
+    ("qualifier", "value", "flag"),
+    [
+        ("archived", "true", "--archived"),
+        ("include-forks", "only", "--include-forks"),
+        ("match", "name,description", "--match"),
+        ("size", "<10", "--size"),
+    ],
+)
+def test_search_repos_passes_new_qualifiers_as_flags(qualifier: str, value: str, flag: str) -> None:
+    spec = SearchSpec(keywords=[], qualifiers=[(qualifier, value)])
+    with patch.object(subprocess, "run", return_value=_gh_result("[]")) as run:
+        github.search_repos(spec)
+    cmd = run.call_args.args[0]
+    assert cmd[cmd.index(flag) + 1] == value
+
+
+def test_search_repos_quoted_phrase_stays_one_argv_element() -> None:
+    spec = SearchSpec(keywords=['"uber for"'], qualifiers=[])
+    with patch.object(subprocess, "run", return_value=_gh_result("[]")) as run:
+        github.search_repos(spec)
+    assert '"uber for"' in run.call_args.args[0]
+
+
 def test_search_repos_no_sort_omits_sort_flags() -> None:
     spec = SearchSpec(keywords=["x"], qualifiers=[])
     with patch.object(subprocess, "run", return_value=_gh_result("[]")) as run:

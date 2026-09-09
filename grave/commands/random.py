@@ -15,20 +15,22 @@ def cmd_random(args: argparse.Namespace) -> None:
     """Pick a random preset and discover something unexpected."""
     import random
 
-    from grave.config.presets import PRESETS
+    from grave.config.presets import list_categories, list_presets
+    from grave.errors import UsageError
     from grave.integrations.github import check_gh_auth, search_repos
-    from grave.services.query import build_search_query
+    from grave.services.query import build_preset_query
+
+    category = getattr(args, "category", None)
+    if category is not None and category not in list_categories():
+        raise UsageError(
+            f"invalid category '{category}'",
+            f"Available categories: {', '.join(list_categories())}",
+        )
 
     check_gh_auth()
 
-    preset = random.choice(PRESETS)
-    spec = build_search_query(
-        keywords=preset.keywords or None,
-        created_range=preset.created_range,
-        language=preset.language,
-        stars_range=preset.stars_range,
-        pushed=preset.pushed,
-    )
+    preset = random.choice(list_presets(category=category))
+    spec = build_preset_query(preset)
     response = search_repos(spec, limit=args.limit, sort=preset.sort)
     items = response.get("items", [])
 

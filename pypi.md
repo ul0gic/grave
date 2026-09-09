@@ -27,7 +27,7 @@ pip install grave-cli
 ```bash
 grave init                          # check prerequisites, sign in via gh
 grave scan --preset ancient         # GitHub's oldest surviving repos
-grave random                        # surprise me — a random preset
+grave random --category ahead-of-time   # an idea that arrived before its tech
 grave dig torvalds/linux            # deep-dive into one repo
 grave morgue                        # dead forks and abandoned mirrors
 grave completion bash >> ~/.bashrc  # optional: tab completion (bash or zsh)
@@ -35,12 +35,12 @@ grave completion bash >> ~/.bashrc  # optional: tab completion (bash or zsh)
 
 ## Ways to dig
 
-- **33 curated presets** across 5 themes — archaeology, dead languages, eras, internet culture, and weird science. Browse them with `grave presets`.
+- **79 curated presets** across 9 themes — ideas ahead of their time, dead platforms, dead services, the human stories behind repos, archaeology, dead languages, eras, internet culture, and weird science. Every preset filters for abandonment. Browse them with `grave presets`.
 - **Era search** — named time windows: `--era y2k`, `dotcom`, `web2.0`, `early-github`, `pre-mobile`.
 - **Abandonment filters** — `--abandoned 10` (untouched 10+ years), `--dead-since 2015`.
 - **Dead-language hunts** — Perl, Pascal, COBOL, Tcl, Smalltalk, ActionScript, and other survivors.
 - **Thematic lenses** — `grave morgue` (dead forks, mirrors, 404s) and `grave casket` (archived / deprecated / read-only).
-- **Serendipity** — `grave random` for a blind dig, `grave rabbit-hole <owner/repo>` to find more like something you just unearthed (steerable with `--language`, `--stars`, `--abandoned`).
+- **Serendipity** — `grave random` for a blind dig (or `grave random --category ahead-of-time` to mine old ideas), `grave rabbit-hole <owner/repo>` to find more like something you just unearthed (steerable with `--language`, `--stars`, `--abandoned`).
 - **Interactive digging** — scan results are numbered; type a number at the prompt to dig into that repo on the spot.
 - **Custom queries** — mix `--keyword`, `--created`, `--language`, `--stars`, and `--pushed` however you like.
 
@@ -58,7 +58,7 @@ Every result is a rich, clickable table; `grave dig` opens a full panel for a si
 | `grave morgue` | Dead forks, mirrors, and abandoned projects |
 | `grave casket` | Archived, deprecated, and read-only repositories |
 | `grave export` | Run a live search and emit JSON / CSV / NDJSON to stdout |
-| `grave presets` | List all 33 curated presets |
+| `grave presets` | List all 79 curated presets |
 | `grave completion <shell>` | Print a bash or zsh tab-completion script |
 
 ## Save a dig

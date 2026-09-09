@@ -21,7 +21,7 @@ _CSV_FIELDS: tuple[str, ...] = (
 )
 
 
-def emit_results(items: list[RepoItem], as_json: bool) -> None:
+def emit_results(items: list[RepoItem], *, as_json: bool) -> None:
     """Emit results as JSON to stdout or as a Rich table."""
     if as_json:
         print(json.dumps(items, indent=2))

@@ -15,29 +15,29 @@ class Lens:
     header: str
     header_style: str
     blurb: str
+    stars_range: str | None = None
+    archived: bool | None = None
+    include_forks: str | None = None
 
 
 THEMED_LENSES: dict[str, Lens] = {
     "morgue": Lens(
-        keywords=["fork", "mirror", "deleted", "moved", "404", "gone"],
+        keywords=[],
         created_range="2008-01-01..2016-12-31",
         pushed="<2018-01-01",
+        stars_range=">=20",
+        include_forks="only",
         header="Entering the morgue... dead forks and inactive repos",
         header_style="bold cyan",
-        blurb="[dim]Repos marked as deleted, moved, or long abandoned[/dim]",
+        blurb="[dim]Forks that gathered stars, then stopped moving[/dim]",
     ),
     "casket": Lens(
-        keywords=[
-            "archived",
-            "unmaintained",
-            "deprecated",
-            "read-only",
-            "no longer maintained",
-        ],
+        keywords=[],
         created_range=None,
         pushed="<2020-01-01",
+        archived=True,
         header="Opening the casket... archived and frozen repositories",
         header_style="bold cyan",
-        blurb="[dim]Repos marked as archived, unmaintained, or deprecated[/dim]",
+        blurb="[dim]Repos their owners formally archived and walked away from[/dim]",
     ),
 }

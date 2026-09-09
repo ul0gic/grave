@@ -25,7 +25,7 @@ def cmd_scan(args: argparse.Namespace) -> None:
         response = search_repos(spec, limit=args.limit, sort=args.sort)
 
     items = response.get("items", [])
-    emit_results(items, args.json)
+    emit_results(items, as_json=args.json)
 
     if not args.json:
         from grave.commands.pick import prompt_dig

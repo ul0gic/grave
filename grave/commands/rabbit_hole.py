@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 def cmd_rabbit_hole(args: argparse.Namespace) -> None:
     """Find repos similar to a given repository."""
     from grave.integrations.github import check_gh_auth, get_repo, search_repos
+    from grave.models.search import SearchFilters
     from grave.services.query import build_search_query
 
     check_gh_auth()
@@ -34,13 +35,10 @@ def cmd_rabbit_hole(args: argparse.Namespace) -> None:
         created_range = f"{created_year - 2}-01-01..{created_year + 2}-12-31"
 
     pushed = abandoned_to_pushed(args.abandoned) if args.abandoned is not None else None
-    spec = build_search_query(
-        keywords=topics[:3] or None,
-        created_range=created_range,
-        language=language,
-        stars_range=args.stars,
-        pushed=pushed,
+    filters = SearchFilters(
+        created_range=created_range, language=language, stars_range=args.stars, pushed=pushed
     )
+    spec = build_search_query(keywords=topics[:3] or None, filters=filters)
     response = search_repos(spec, limit=args.limit)
     items = response.get("items", [])
 

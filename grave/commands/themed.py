@@ -6,6 +6,7 @@ import json
 from typing import TYPE_CHECKING
 
 from grave.config.lenses import THEMED_LENSES
+from grave.models.search import SearchFilters
 from grave.services.query import build_search_query
 from grave.view.output import emit_results
 
@@ -20,12 +21,15 @@ def cmd_themed(args: argparse.Namespace) -> None:
     check_gh_auth()
 
     lens = THEMED_LENSES[args.lens]
-    spec = build_search_query(
-        keywords=lens.keywords,
+    filters = SearchFilters(
         created_range=lens.created_range,
         language=getattr(args, "language", None),
+        stars_range=lens.stars_range,
         pushed=lens.pushed,
+        archived=lens.archived,
+        include_forks=lens.include_forks,
     )
+    spec = build_search_query(keywords=lens.keywords, filters=filters)
     response = search_repos(spec, limit=args.limit)
     items = response.get("items", [])
 

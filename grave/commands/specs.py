@@ -8,7 +8,8 @@ from typing import TYPE_CHECKING
 from grave.config.eras import ERAS
 from grave.config.presets import get_preset, list_presets
 from grave.errors import UsageError
-from grave.services.query import build_search_query
+from grave.models.search import SearchFilters
+from grave.services.query import build_preset_query, build_search_query
 
 if TYPE_CHECKING:
     import argparse
@@ -26,6 +27,7 @@ _SEARCH_PARAMS = (
     "abandoned",
     "era",
     "dead_since",
+    "archived",
 )
 
 
@@ -48,13 +50,20 @@ def build_custom_spec(args: argparse.Namespace) -> SearchSpec:
     elif args.abandoned is not None:
         pushed_filter = abandoned_to_pushed(args.abandoned)
 
-    return build_search_query(
-        keywords=args.keyword,
+    filters = SearchFilters(
         created_range=created_filter,
         language=args.language,
         stars_range=args.stars,
         pushed=pushed_filter,
+        archived=_parse_archived(args.archived),
     )
+    return build_search_query(keywords=args.keyword, filters=filters)
+
+
+def _parse_archived(value: str | None) -> bool | None:
+    if value is None:
+        return None
+    return value == "true"
 
 
 def abandoned_to_pushed(years: int) -> str:
@@ -72,13 +81,7 @@ def resolve_preset_spec(args: argparse.Namespace) -> tuple[Preset, SearchSpec]:
         names = "\n".join(f"  - {p.name}" for p in list_presets())
         raise UsageError(f"preset '{args.preset}' not found", "\nAvailable presets:", names)
 
-    spec = build_search_query(
-        keywords=preset.keywords or None,
-        created_range=preset.created_range,
-        language=args.language or preset.language,
-        stars_range=args.stars or preset.stars_range,
-        pushed=preset.pushed,
-    )
+    spec = build_preset_query(preset, language=args.language, stars_range=args.stars)
     return preset, spec
 
 

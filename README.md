@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/version-3.1.0-blue?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/badge/version-3.2.0-blue?style=flat-square" alt="Version">
   <img src="https://img.shields.io/badge/python-3.13+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/built_with-uv-DE5FE9?style=flat-square" alt="uv">
   <img src="https://img.shields.io/badge/linter-ruff-D7FF64?style=flat-square&logo=ruff&logoColor=black" alt="Ruff">
@@ -55,12 +55,13 @@ grave completion bash >> ~/.bashrc   # or: grave completion zsh >> ~/.zshrc
 
 ## Features
 
-- **33 curated presets** across 5 categories (archaeology, dead languages, eras, culture, science)
+- **79 curated presets** across 9 categories (ahead of their time, archaeology, culture, dead languages, dead platforms, dead services, eras, human, science)
+- **Every preset filters for abandonment** — a `pushed` cutoff is mandatory, so a preset never surfaces a repo that is still maintained
 - **Interactive digging** — scan results are numbered; type a number to dig into that repo on the spot
 - **Era-based search** with named time windows (Y2K, dotcom bubble, Web 2.0, early GitHub)
-- **Smart abandonment filters** (`--abandoned`, `--dead-since`)
-- **Discovery commands** like `grave random` (slot machine) and `grave rabbit-hole` (find similar repos, steerable with `--language`, `--stars`, `--abandoned`)
-- **Thematic exploration** with `grave morgue` (dead forks) and `grave casket` (archived repos)
+- **Smart abandonment filters** (`--abandoned`, `--dead-since`, `--archived`)
+- **Discovery commands** like `grave random` (slot machine, narrowable with `--category ahead-of-time`) and `grave rabbit-hole` (find similar repos, steerable with `--language`, `--stars`, `--abandoned`)
+- **Thematic exploration** with `grave morgue` (forks that gathered stars, then died) and `grave casket` (repos formally archived on GitHub)
 - **Rich terminal UI** with clickable hyperlinks, colored tables, and formatted panels
 - **Shell tab completion** for bash and zsh, generated from the live CLI so it never drifts
 - **Export** to JSON, CSV, or NDJSON — live search results streamed to stdout
@@ -74,8 +75,8 @@ grave completion bash >> ~/.bashrc   # or: grave completion zsh >> ~/.zshrc
 | `grave init` | First-time setup and prerequisite checks |
 | `grave scan` | Search for repos with presets or custom parameters |
 | `grave dig <owner/repo>` | Deep-dive into a specific repository |
-| `grave presets` | List all 33 available search presets |
-| `grave random` | Random preset slot machine — surprise yourself |
+| `grave presets` | List all 79 available search presets |
+| `grave random` | Random preset slot machine — optionally within one `--category` |
 | `grave rabbit-hole <owner/repo>` | Find similar repos by language, era, and topics |
 | `grave morgue` | Search for dead forks and repos with inactive owners |
 | `grave casket` | Find archived, unmaintained, and frozen repositories |
@@ -87,8 +88,9 @@ grave completion bash >> ~/.bashrc   # or: grave completion zsh >> ~/.zshrc
 ```bash
 # Preset search
 grave scan --preset ancient
+grave scan --preset proto-smartwatch          # smartwatches years before Apple's
+grave scan --preset uber-for-x                # startup pitches frozen mid-pivot
 grave scan --preset dead-lang-cobol --limit 50
-grave scan --preset google-code-refugees
 
 # Era-based search
 grave scan --era y2k --keyword web
@@ -97,6 +99,7 @@ grave scan --era dotcom --language Java
 # Find abandoned repos
 grave scan --keyword python --abandoned 10
 grave scan --dead-since 2015 --language Ruby
+grave scan --keyword "home automation" --archived true
 
 # Custom search
 grave scan --keyword "neural network" --created "2008-01-01..2012-12-31"
@@ -108,6 +111,7 @@ grave dig rails/rails --json
 
 # Discovery
 grave random
+grave random --category ahead-of-time
 grave rabbit-hole torvalds/linux
 grave rabbit-hole rails/rails --language Ruby --abandoned 8
 grave morgue --limit 50
@@ -119,46 +123,47 @@ grave export --keyword python --language Python --format csv > python.csv
 grave export --preset flash-rip --format ndjson > flash.ndjson
 
 # Filter presets by category
-grave presets --category dead-languages
-grave presets --category archaeology
+grave presets --category ahead-of-time
+grave presets --category human
 ```
 
 ## Presets
 
-33 curated presets across 5 categories:
+79 curated presets across 9 categories. Every preset carries an abandonment cutoff, so results are always repos nobody has pushed to in years.
 
 ### Archaeology
 | Preset | Description |
 |---|---|
-| `ancient` | GitHub's earliest repos (2008-2010) |
-| `forgotten` | Old repos with few stars, untouched for 5+ years |
-| `graveyard` | Archived and deprecated projects |
+| `ancient` | GitHub's earliest repos (2008-2010), long since abandoned |
+| `forgotten` | Old repos with few stars, untouched for a decade |
+| `graveyard` | Projects their owners formally archived |
 | `one-commit` | Repos with minimal activity, frozen in time |
 | `abandoned-10y` | Repos untouched for 10+ years |
 | `dotfiles-ancient` | The earliest dotfiles and system configs |
+| `tiny-gems` | Starred repos under 10 KB: whole ideas that fit on one screen |
 
 ### Dead Languages
 | Preset | Description |
 |---|---|
-| `dead-lang` | Fortran projects |
+| `dead-lang` | Fortran: still computing, rarely committed |
 | `dead-lang-perl` | Perl relics from the CGI era |
 | `dead-lang-pascal` | Pascal and Delphi survivors |
 | `dead-lang-cobol` | COBOL: the language that won't die |
 | `dead-lang-tcl` | Tcl/Tk scripts from a bygone era |
 | `dead-lang-smalltalk` | Smalltalk: OOP's grandparent |
-| `dead-lang-coffeescript` | CoffeeScript: the dialect ES6 made obsolete |
 | `flash-rip` | Flash/ActionScript projects (RIP 2020) |
+| `dead-lang-coffeescript` | CoffeeScript: the dialect ES6 made obsolete |
 
 ### Eras
 | Preset | Description |
 |---|---|
 | `y2k-web` | Y2K-era web tools and relics |
-| `pre-npm` | JavaScript before npm (2008-2011) |
-| `pre-docker` | Infrastructure before containers |
-| `pre-git` | CVS/SVN migration tools and relics |
-| `homebrew-fossils` | Early macOS/Homebrew era tools |
+| `pre-npm` | JavaScript before npm existed (2008-2011) |
+| `pre-docker` | Infrastructure before containers (Puppet/Chef/Vagrant) |
+| `pre-git` | CVS/SVN migration tools and pre-git relics |
 | `dead-frameworks` | The 2010-2014 frontend graveyard (Backbone, AngularJS 1.x) |
-| `j2me-era` | Pre-smartphone mobile: J2ME, Symbian |
+| `j2me-era` | Pre-smartphone mobile: J2ME, Symbian, WAP |
+| `homebrew-fossils` | Early macOS/Homebrew era tools |
 
 ### Culture
 | Preset | Description |
@@ -169,9 +174,11 @@ grave presets --category archaeology
 | `myspace-era` | Social network widgets and MySpace-era tools |
 | `sourceforge-refugees` | Projects migrated from SourceForge |
 | `google-code-refugees` | Projects exiled by the Google Code shutdown |
-| `dead-social` | Clients for social networks that no longer exist |
+| `dead-social` | Clients and bots for social networks that no longer exist |
 | `bbs-era` | Bulletin board systems and BBS door games |
 | `crypto-og` | Early blockchain and cryptocurrency (2009-2013) |
+| `esolangs` | Esoteric languages: Brainfuck, Befunge, Malbolge and stranger |
+| `demoscene` | Size-coded intros and tracker players from the demoscene |
 
 ### Science
 | Preset | Description |
@@ -179,6 +186,69 @@ grave presets --category archaeology
 | `weird-science` | Experimental science and simulation projects |
 | `academic` | Thesis projects and academic research code |
 | `dead-ai-pre2012` | Pre-AlexNet AI, abandoned by the deep-learning boom |
+
+### Ahead of Their Time
+The heart of grave. These are ideas people built before the hardware, the market, or the APIs were ready: smartwatches years before Apple's, home assistants before Alexa, self-driving cars in someone's garage. Most stalled because the tech was not there yet. It is now. Dig here when you want an old idea to rethink with modern capabilities.
+
+| Preset | Description |
+|---|---|
+| `proto-smartwatch` | Smartwatches built years before Apple's |
+| `vr-before-oculus` | Virtual reality before the Oculus Kickstarter |
+| `ar-before-arkit` | Augmented reality on phones that could barely run it |
+| `voice-before-alexa` | Voice assistants before Alexa and Siri got good |
+| `chatbots-before-llm` | Chatbots from the AIML era, before language models |
+| `smart-home-early` | Home automation before HomeKit and Nest |
+| `self-driving-hobby` | Hobbyist self-driving cars before the industry caught up |
+| `diy-drones` | Garage-built quadcopters before DJI made them a product |
+| `brain-interface` | Brain-computer interfaces on consumer EEG headsets |
+| `gesture-control` | Gesture and hand tracking from the Kinect hacking wave |
+| `wearables-early` | Wearables and e-textiles before the category existed |
+| `decentralized-social` | Federated and P2P social networks a decade before Mastodon |
+| `mesh-networks` | Community mesh networks and darknets |
+| `3d-printing-early` | RepRap-era 3D printing tooling |
+| `iot-before-iot` | Connected sensors before anyone said Internet of Things |
+| `realtime-collab` | Realtime collaborative editing before it was table stakes |
+| `semantic-web` | The semantic web: RDF, ontologies, linked data |
+| `quantified-self` | Lifelogging and self-tracking before fitness trackers |
+| `e-paper` | E-ink hacks and e-paper displays |
+| `kickstarter-corpses` | Crowdfunded projects whose code outlived the campaign |
+
+### Dead Platforms
+| Preset | Description |
+|---|---|
+| `windows-phone` | Windows Phone, Silverlight, and XNA apps |
+| `blackberry` | BlackBerry and BB10 apps |
+| `palm-webos` | Palm Pre and TouchPad webOS apps |
+| `google-glass` | Glassware from the Google Glass Explorer year |
+| `firefox-os` | Firefox OS and Boot2Gecko apps |
+| `chrome-apps` | Packaged Chrome Apps, retired in 2020 |
+| `kinect-hacks` | The 2010-2014 Kinect hacking scene |
+
+### Dead Services
+| Preset | Description |
+|---|---|
+| `google-reader` | Clients and clones built for Google Reader |
+| `google-wave` | Gadgets and robots for Google Wave |
+| `parse-refugees` | Apps built on the Parse.com backend |
+| `checkin-wars` | Foursquare and Gowalla check-in apps |
+| `yahoo-graveyard` | Yahoo Pipes, Delicious, and YQL mashups |
+| `app-net` | Clients for App.net, the paid Twitter alternative |
+| `flash-games` | Browser games from the Flash era |
+
+### Human
+The stories behind the repos: first commits, New Year's resolutions, hackathon weekends, startup pitches.
+
+| Preset | Description |
+|---|---|
+| `hello-world-graveyard` | Zero-star hello-worlds from 2008-2010 whose authors never came back |
+| `my-first-repo` | Someone's very first repository, abandoned after the first push |
+| `learning-x` | 'Learning Rust/Haskell/Clojure/Go' repos that stopped after a month |
+| `resolution-2013` | Started in the first week of 2013, dead by spring |
+| `hackathon-corpses` | Built in a weekend, never touched again |
+| `bootcamp-projects` | Coding bootcamp final projects and capstones |
+| `uber-for-x` | 'The Uber for X' startup pitches, frozen mid-pivot |
+| `todo-app-graveyard` | The universal starter project, ten thousand times over |
+| `rewrite-stalled` | Rewrites in Rust or Go that stalled partway |
 
 ## Contributing
 
